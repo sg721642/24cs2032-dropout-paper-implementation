@@ -64,6 +64,11 @@ Generate self-contained Jupyter notebook:
 python make_notebook.py
 ```
 
+Run saved-model inference demo:
+```bash
+python presentation/demo.py
+```
+
 ## Files
 
 - `run.py`: Core CLI script containing `ManualDropout`, MLP architecture, training loops, evaluation metrics, and plotting routines.
@@ -75,6 +80,7 @@ python make_notebook.py
 - `results_mnist/`: Recorded metrics, summaries, configuration, and ablation plots for MNIST.
 - `results_fashion/`: Recorded metrics, summaries, configuration, and ablation plots for Fashion-MNIST.
 - `report/`: IEEE two-column report source (`main.tex`, `references.bib`, figures) and compiled PDF (`24CS2032_Dropout_Report.pdf`).
+- `presentation/`: Final editable presentation (`24CS2032_Dropout_Presentation.pptx`), speaker notes (`SPEAKER_NOTES.md`), viva preparation (`VIVA.md`), and saved-model inference demo (`demo.py`).
 
 ## References
 

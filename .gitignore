@@ -20,6 +20,7 @@ timing_cpu/
 timing_mps/
 timing*/
 report/rendered/
+presentation/rendered/
 report/compile.log
 report/main.pdf
 *.log
