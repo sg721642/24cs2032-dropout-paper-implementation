@@ -52,7 +52,7 @@
 ---
 
 ### 10. Does dropout always improve model accuracy?
-**Answer:** No. Dropout acts as a regularizer that penalizes representational capacity. If the model is already capacity-constrained, if the dataset has intricate non-redundant features, or if the drop rate is set too high (e.g., $d \ge 0.5$ on Fashion-MNIST), dropout causes severe underfitting and degrades accuracy relative to the baseline.
+**Answer:** No. Dropout acts as a regularizer. Under a fixed training horizon, if the drop rate is set too high (e.g., $d \ge 0.5$ on Fashion-MNIST), the network exhibits underfitting and achieves higher test error than the unregularized baseline.
 
 ---
 
@@ -62,12 +62,12 @@
 ---
 
 ### 12. Why was $d=0.4$ selected for MNIST even though $d=0.3$ had slightly lower observed test error?
-**Answer:** Because our scientific protocol strictly forbids test-set snooping. Model selection is governed exclusively by minimum mean validation error, where $d=0.4$ achieved $3.747 \pm 0.130\%$ compared to $3.753 \pm 0.061\%$ for $d=0.3$. The $0.023$ percentage point test difference is within sample standard deviation noise ($0.282\%$).
+**Answer:** Because our scientific protocol strictly forbids test-set snooping. Model selection was governed exclusively by minimum mean validation error, where $d=0.4$ achieved $3.747 \pm 0.130\%$ compared to $3.753 \pm 0.061\%$ for $d=0.3$. The observed mean test-error difference between $d=0.3$ and $d=0.4$ is only 0.023 percentage points. Test set data remained strictly quarantined and was never used for model selection.
 
 ---
 
 ### 13. Why did $d=0.5$ perform poorly on Fashion-MNIST?
-**Answer:** Fashion-MNIST features subtle grayscale textures, edges, and silhouettes (e.g., shirts vs. pullovers vs. coats). Unlike MNIST digits which have massive spatial pixel redundancy, apparel images contain fine-grained, non-redundant visual cues. Dropping 50% of hidden units under a fixed 20-epoch budget starves the network of expressive capacity.
+**Answer:** Under this fixed protocol, $d=0.5$ produced higher mean test error ($15.133 \pm 0.325\%$) than the no-dropout baseline ($14.663 \pm 0.175\%$). If asked why, possible factors include stronger regularization and a fixed 20-epoch optimization budget, but the experiment does not isolate a causal mechanism. We do not present speculation as measured fact.
 
 ---
 
@@ -106,4 +106,4 @@
 ---
 
 ### 20. What happens if dropout rate is set too high ($d \ge 0.6$)?
-**Answer:** Excessive dropout randomly discards the majority of activation pathways during every forward pass. This creates extreme gradient variance, prevents stable feature representations from forming, slows convergence, and causes severe underfitting under a finite epoch budget.
+**Answer:** Under our fixed 20-epoch training budget, high dropout rates ($d \ge 0.6$) produced higher training and test error on both benchmarks, consistent with stronger underfitting. Higher dropout rates may require more optimization, but our experimental protocol intentionally kept the same 20-epoch budget across all rates.

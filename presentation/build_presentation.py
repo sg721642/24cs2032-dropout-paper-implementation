@@ -417,7 +417,7 @@ def create_presentation():
         ("Validation-Selected (d* = 0.4):", "Train: 0.323 ± 0.047%  |  Val: 3.747 ± 0.130%\nTest Error: 3.843 ± 0.282%  (Accuracy: 96.157%)\nGeneralization Gap: 3.520 ± 0.295 pp"),
         ("Net Gain over Baseline:", "+0.477 pp lower test error  (11.03% relative reduction)"),
         ("Paper Reference Rate (d = 0.5):", "Test Error: 3.883 ± 0.087%  (Gap: 3.183 pp)"),
-        ("Model Selection Nuance:", "Lowest numerical test error occurred at d=0.3 (3.820 ± 0.118%). However, d=0.4 is the sole authorized selected model because test data was strictly quarantined from selection. (Delta: 0.023 pp is within noise)."),
+        ("Model Selection Nuance:", "Lowest numerical test error occurred at d=0.3 (3.820 ± 0.118%). The observed mean test-error difference between d=0.3 and d=0.4 is only 0.023 percentage points. Test performance was not used for model selection."),
         ("Negative Finding:", "Higher drop rates degraded performance below baseline: d=0.6 (4.380%) and d=0.7 (5.110%).")
     ]
     
@@ -461,7 +461,7 @@ def create_presentation():
         ("Paper Table 2 Historical Score:", "Srivastava et al. report ~1.25% test error on MNIST using a 3x1024 ReLU architecture with dropout."),
         ("Our Measured Selected Score:", "3.843 ± 0.282% test error (d = 0.4, 3x256 MLP)."),
         ("NOT Directly Comparable:", "Our experiment is not an apples-to-apples comparison:\n• Architecture: 256 units vs. 1,024-8,192 units\n• Training set: 10,000 subset vs. full 60,000\n• Budget: 20 epochs vs. hundreds of epochs\n• Optimizer: Adam vs. SGD + momentum + max-norm"),
-        ("Qualitative Replicability:", "Successfully reproduces Figure 9(a) U-shaped curve: intermediate retention probabilities provide optimal regularization; excessive dropout causes underfitting.")
+        ("Qualitative Trend:", "Our reduced-scale rate sweep shows a qualitatively similar non-monotonic trend: moderate dropout performs better than very high dropout under this fixed training budget.")
     ]
     for lbl, desc in comp_points:
         p_l = ctf6.add_paragraph()
@@ -497,7 +497,7 @@ def create_presentation():
         ("No Dropout Baseline (d = 0.0):", "Train: 7.130 ± 0.177%  |  Val: 13.127 ± 0.247%\nTest Error: 14.663 ± 0.175%  |  Gap: 7.533 pp"),
         ("Validation-Selected (d* = 0.2):", "Train: 8.583 ± 0.414%  |  Val: 13.087 ± 0.408%\nTest Error: 14.347 ± 0.253%  (Accuracy: 85.653%)\nNet Improvement: +0.317 pp (2.16% relative)"),
         ("Critical Negative Finding:", "Canonical d = 0.5 underperformed baseline:\nTest error rose to 15.133 ± 0.325% (+0.47 pp worse than baseline). At d = 0.7, error spiked to 17.453%."),
-        ("Key Scientific Insight:", "Dropout strength is highly task-sensitive. Fashion-MNIST features subtle textures and fine-grained visual cues; aggressive dropout suppresses critical features and induces underfitting.")
+        ("Key Scientific Insight:", "Under the fixed 20-epoch budget, higher dropout rates produced higher train and test error on Fashion-MNIST, consistent with stronger underfitting.")
     ]
     for lbl, desc in fash_points:
         p_l = ftf6.add_paragraph()
@@ -517,48 +517,73 @@ def create_presentation():
     # SLIDE 7: FAILURE CASES + LIMITATIONS
     # =========================================================================
     slide7 = prs.slides.add_slide(prs.slide_layouts[6])
-    add_header(slide7, "Failure Case Inspection and Experimental Limitations")
+    add_header(slide7, "Failure Case Inspection and Methodological Limitations")
     
-    # Left Card: Failure Analysis with Examples
-    fail_card = slide7.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(1.7), Inches(5.6), Inches(5.2))
+    # Left Card: Failure Images & Callouts (width 7.5 inches ~60%)
+    fail_card = slide7.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(1.6), Inches(7.5), Inches(5.4))
     fail_card.fill.solid()
     fail_card.fill.fore_color.rgb = BOX_BG
     fail_card.line.color.rgb = BOX_BORDER
-    fatf = fail_card.text_frame
-    fatf.word_wrap = True
-    fatf.margin_left = fatf.margin_top = fatf.margin_right = fatf.margin_bottom = Inches(0.3)
     
-    fap0 = fatf.paragraphs[0]
-    fap0.text = "Inspection of Misclassified Test Samples"
-    fap0.font.size = Pt(15)
-    fap0.font.bold = True
-    fap0.font.color.rgb = ACCENT_NAVY
-    fap0.space_after = Pt(8)
+    # MNIST Header & Callout in a compact text frame
+    tbox_m = slide7.shapes.add_textbox(Inches(0.95), Inches(1.70), Inches(7.2), Inches(0.55))
+    tf_m = tbox_m.text_frame
+    tf_m.word_wrap = True
+    tf_m.margin_left = tf_m.margin_top = tf_m.margin_right = tf_m.margin_bottom = Inches(0)
+    p_m_lbl = tf_m.paragraphs[0]
+    p_m_lbl.text = "MNIST Failure Cases (Selected d = 0.4):"
+    p_m_lbl.font.size = Pt(12)
+    p_m_lbl.font.bold = True
+    p_m_lbl.font.color.rgb = ACCENT_BLUE
     
-    examples = [
-        ("MNIST Failure Cases (Selected d = 0.4):", 
-         "• True 2 -> Predicted 3 (conf 0.52): Open lower loop visually resembles numeral 3.\n• True 9 -> Predicted 8 (conf 0.91): Curved ascender stroke resembles top loop of numeral 8."),
-        ("Fashion-MNIST Failure Cases (Selected d = 0.2):", 
-         "• True Coat -> Predicted Pullover (conf 0.71): Shares global torso silhouette and neckline.\n• True Ankle Boot -> Predicted Sneaker (conf 0.99): Low-cut ankle profile resembles casual shoe."),
-        ("Observational Insight:", 
-         "At 28x28 grayscale resolution, fine texture boundaries are challenging for MLPs lacking spatial convolutional inductive bias. We describe visual stroke similarities rather than claiming proven causal latent mechanisms.")
-    ]
-    for lbl, desc in examples:
-        p_l = fatf.add_paragraph()
-        p_l.text = lbl
-        p_l.font.size = Pt(12)
-        p_l.font.bold = True
-        p_l.font.color.rgb = ACCENT_BLUE
-        p_l.space_after = Pt(2)
-        
-        p_d = fatf.add_paragraph()
-        p_d.text = desc
-        p_d.font.size = Pt(11)
-        p_d.font.color.rgb = TEXT_MAIN
-        p_d.space_after = Pt(8)
+    p_m_call = tf_m.add_paragraph()
+    p_m_call.text = "Callouts: True 2 → Pred 3 (conf 0.52)   |   True 9 → Pred 8 (conf 0.91)"
+    p_m_call.font.size = Pt(10)
+    p_m_call.font.color.rgb = TEXT_MUTED
+    
+    # MNIST Cropped Image (Row 1)
+    mnist_fail_path = PROJECT_ROOT / "results_mnist" / "mnist_failure_cases.png"
+    if mnist_fail_path.exists():
+        p_mnist = slide7.shapes.add_picture(str(mnist_fail_path), Inches(0.95), Inches(2.30), Inches(7.2), Inches(1.50))
+        p_mnist.crop_top = 70.0 / 1440.0
+        p_mnist.crop_bottom = 920.0 / 1440.0
 
-    # Right Card: Methodological Limitations
-    lim_card = slide7.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(6.8), Inches(1.7), Inches(5.733), Inches(5.2))
+    # Fashion Header & Callout
+    tbox_f = slide7.shapes.add_textbox(Inches(0.95), Inches(3.95), Inches(7.2), Inches(0.55))
+    tf_f = tbox_f.text_frame
+    tf_f.word_wrap = True
+    tf_f.margin_left = tf_f.margin_top = tf_f.margin_right = tf_f.margin_bottom = Inches(0)
+    p_f_lbl = tf_f.paragraphs[0]
+    p_f_lbl.text = "Fashion-MNIST Failure Cases (Selected d = 0.2):"
+    p_f_lbl.font.size = Pt(12)
+    p_f_lbl.font.bold = True
+    p_f_lbl.font.color.rgb = ACCENT_BLUE
+    
+    p_f_call = tf_f.add_paragraph()
+    p_f_call.text = "Callouts: Coat → Pullover (conf 0.71)   |   Ankle boot → Sneaker (conf 0.99)"
+    p_f_call.font.size = Pt(10)
+    p_f_call.font.color.rgb = TEXT_MUTED
+    
+    # Fashion Cropped Image (Row 1)
+    fashion_fail_path = PROJECT_ROOT / "results_fashion" / "fashion_failure_cases.png"
+    if fashion_fail_path.exists():
+        p_fash = slide7.shapes.add_picture(str(fashion_fail_path), Inches(0.95), Inches(4.55), Inches(7.2), Inches(1.50))
+        p_fash.crop_top = 70.0 / 1440.0
+        p_fash.crop_bottom = 920.0 / 1440.0
+
+    # Observational footnote
+    tbox_note = slide7.shapes.add_textbox(Inches(0.95), Inches(6.20), Inches(7.2), Inches(0.65))
+    tf_note = tbox_note.text_frame
+    tf_note.word_wrap = True
+    tf_note.margin_left = tf_note.margin_top = tf_note.margin_right = tf_note.margin_bottom = Inches(0)
+    p_note = tf_note.paragraphs[0]
+    p_note.text = "Note: Errors reflect visual stroke & silhouette ambiguities at 28×28 resolution without spatial convolutional inductive bias."
+    p_note.font.size = Pt(9.5)
+    p_note.font.italic = True
+    p_note.font.color.rgb = TEXT_MUTED
+
+    # Right Card: Methodological Limitations (width 4.033 inches ~35%)
+    lim_card = slide7.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(8.5), Inches(1.6), Inches(4.033), Inches(5.4))
     lim_card.fill.solid()
     lim_card.fill.fore_color.rgb = BOX_BG
     lim_card.line.color.rgb = BOX_BORDER
@@ -568,31 +593,32 @@ def create_presentation():
     
     lp0 = ltf7.paragraphs[0]
     lp0.text = "Methodological Constraints & Scope"
-    lp0.font.size = Pt(15)
+    lp0.font.size = Pt(14)
     lp0.font.bold = True
     lp0.font.color.rgb = ACCENT_NAVY
-    lp0.space_after = Pt(10)
+    lp0.space_after = Pt(8)
     
     limits = [
-        ("1. Small Seed Sample Size (N = 3):", "Evaluating over seeds {42, 43, 44} reflects empirical variance, but N=3 lacks statistical power for formal hypothesis testing."),
-        ("2. Fixed 20-Epoch Training Horizon:", "High dropout rates inherently retard convergence; additional epochs might partially recover performance for d >= 0.5."),
-        ("3. Subsampled 10k Training Split:", "10,000 examples magnifies regularizer sensitivity relative to the standard 60,000 dataset."),
-        ("4. Network Architecture:", "Fully connected MLPs lack translational invariance of CNNs."),
-        ("5. Extension Scope:", "Fashion-MNIST was evaluated strictly as an exploratory extension benchmark under the same protocol (not part of the 2014 paper).")
+        ("• 3 random seeds only:", "N=3 reflects empirical sample variance but lacks statistical power for formal hypothesis testing."),
+        ("• 10k training subset:", "Subsampled training split magnifies regularizer sensitivity relative to the full 60,000 dataset."),
+        ("• Fixed 20-epoch budget:", "Higher dropout may require more optimization; this experiment intentionally keeps the same 20-epoch budget for every rate."),
+        ("• Fully connected MLP:", "Lacks the translational invariance of convolutional networks."),
+        ("• No significance test:", "Sample SD (ddof=1) reported; descriptive comparisons only without p-values."),
+        ("• Fashion-MNIST is an extension:", "Exploratory benchmark under the identical protocol (not present in 2014 paper).")
     ]
     for lbl, desc in limits:
         p_l = ltf7.add_paragraph()
         p_l.text = lbl
-        p_l.font.size = Pt(12)
+        p_l.font.size = Pt(11)
         p_l.font.bold = True
         p_l.font.color.rgb = ACCENT_BLUE
         p_l.space_after = Pt(1)
         
         p_d = ltf7.add_paragraph()
         p_d.text = desc
-        p_d.font.size = Pt(11)
+        p_d.font.size = Pt(10)
         p_d.font.color.rgb = TEXT_MAIN
-        p_d.space_after = Pt(6)
+        p_d.space_after = Pt(5)
 
     # =========================================================================
     # SLIDE 8: CONCLUSION + DEMO
@@ -618,7 +644,7 @@ def create_presentation():
     
     concs = [
         "1. Complete Mathematical Implementation: Inverted dropout was built and verified from scratch without any built-in library dependencies.",
-        "2. Regularization Efficacy: Moderate validation-selected dropout reliably lowered generalization error on both benchmarks:\n   • MNIST: 4.320% -> 3.843% test error (11.03% relative reduction)\n   • Fashion-MNIST: 14.663% -> 14.347% test error (2.16% relative reduction)",
+        "2. Regularization Efficacy: Moderate validation-selected dropout lowered mean test error relative to the no-dropout baseline in our fixed protocol:\n   • MNIST: 4.320% -> 3.843% test error (11.03% relative reduction)\n   • Fashion-MNIST: 14.663% -> 14.347% test error (2.16% relative reduction)",
         "3. Critical Negative Finding: Canonical d = 0.5 underperformed the no-dropout baseline on Fashion-MNIST, and rates d >= 0.6 caused underfitting on both benchmarks.",
         "4. Methodological Lesson: Dropout strength cannot be assumed universally; it must be calibrated systematically against validation data."
     ]
@@ -647,7 +673,7 @@ def create_presentation():
     
     demo_info = [
         ("Interactive Demo (presentation/demo.py):", 
-         "• Loads saved checkpoint: mnist_d0.4_s42.pt\n• Evaluates first 10 test images instantly on CPU\n• 100% test accuracy on sample batch (0 training steps executed)"),
+         "• Loads saved checkpoint: mnist_d0.4_s42.pt on CPU\n• First 10 MNIST test samples: 10/10 correct in the demo.\n  (Demo sample only — not the reported full-test accuracy.)\n• Formal selected mean test accuracy remains 96.157%."),
         ("Private Project Repository:", 
          "https://github.com/sg721642/24cs2032-dropout-paper-implementation\n(Contains complete source, reproducible notebook, and audited CSV data)"),
         ("Verified Academic Report:", 

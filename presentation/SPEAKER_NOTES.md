@@ -64,7 +64,7 @@
   3. The unregularized baseline ($d=0.0$) reached $0.203\%$ training error but suffered a test error of $4.320 \pm 0.295\%$, exhibiting a wide 4.12 percentage point generalization gap.
   4. As dropout is introduced, test error decreases steadily. Validation error selected $d=0.4$ as the optimal rate, achieving a validation error of $3.747 \pm 0.130\%$.
   5. On the unseen test set, this selected model achieved $3.843 \pm 0.282\%$ error, representing an absolute improvement of 0.48 percentage points and an 11.03% relative error reduction over the baseline.
-  6. Now, there is an important methodological nuance: descriptively, the lowest average test error occurred at $d=0.3$ with $3.820\%$. But because test data must never guide selection, $d=0.4$ is our sole authorized model. The 0.02% difference is negligible and well within experimental noise.
+  6. Now, there is an important methodological nuance: descriptively, the lowest average test error occurred at $d=0.3$ with $3.820\%$. The observed mean test-error difference between $d=0.3$ and $d=0.4$ is only 0.023 percentage points. Test data was quarantined and never used for model selection.
   7. Notice also the negative finding: when drop rate exceeds 0.5, test error degrades sharply to $5.110\%$ at $d=0.7$, performing markedly worse than having no dropout at all.
 
 ---
@@ -75,23 +75,23 @@
   1. On the left side of this slide, we contextualize our findings against Table 2 of the original 2014 paper.
   2. Srivastava et al. reported a test error of approximately $1.25\%$ using a 3-layer ReLU network with dropout.
   3. We explicitly emphasize that our result of $3.843\%$ is not an apples-to-apples numerical comparison: the original paper trained networks with over 1,024 to 8,192 hidden units on the full 60,000 dataset for hundreds of epochs with momentum SGD and max-norm constraints.
-  4. Our study successfully replicates the core scientific phenomenon—the qualitative U-shaped curve and regularization benefit—under a constrained 20-epoch educational budget.
+  4. Our reduced-scale rate sweep shows a qualitatively similar non-monotonic trend: moderate dropout performs better than very high dropout under this fixed training budget.
   5. On the right side, we extended the identical protocol to Fashion-MNIST.
   6. Here, validation selected a lower drop rate, $d=0.2$, which lowered test error from $14.663\%$ to $14.347\%$, a 2.16% relative improvement.
   7. Strikingly, the canonical rate of $d=0.5$ produced $15.133\%$ test error—worse than the no-dropout baseline.
-  8. This proves that optimal regularizer strength is sensitive to dataset complexity: Fashion-MNIST requires preserving more feature capacity than simple stroke digits.
+  8. Under the fixed 20-epoch budget, higher dropout rates produced higher train and test error on Fashion-MNIST, consistent with stronger underfitting.
 
 ---
 
 ### Slide 7: Failure Analysis & Limitations
 - **Allocated Time:** ~65–75 seconds
 - **Talking Points:**
-  1. To understand where our best models still fail, Slide 7 examines misclassified test samples from the validation-selected checkpoints.
-  2. On MNIST with $d=0.4$, errors typically stem from ambiguous handwriting—for instance, an open digit 2 visually resembling a 3, or a compressed digit 9 with a curved stem resembling an 8.
-  3. On Fashion-MNIST with $d=0.2$, failures concentrate along semantically adjacent apparel silhouettes—such as misclassifying an open coat as a pullover, or a low-cut ankle boot as a sneaker.
+  1. To understand where our best models still fail, Slide 7 displays the actual misclassified test images from the official test set for our validation-selected models.
+  2. On MNIST with $d=0.4$, errors typically stem from ambiguous handwriting—for instance, an open digit 2 visually resembling a 3 (confidence 0.52), or a compressed digit 9 with a curved stem resembling an 8 (confidence 0.91).
+  3. On Fashion-MNIST with $d=0.2$, failures concentrate along semantically adjacent apparel silhouettes—such as misclassifying an open coat as a pullover (confidence 0.71), or a low-cut ankle boot as a sneaker (confidence 0.99).
   4. Fully connected MLPs lack the translation invariance of convolutional networks, making subtle $28 \times 28$ grayscale textures challenging to disentangle.
   5. We must also acknowledge key experimental limitations: our sample size of three seeds cannot support formal significance testing, our 20-epoch training horizon is deliberately constrained, and Fashion-MNIST was evaluated purely as an exploratory extension.
-  6. High dropout rates might recover performance if given hundreds of epochs, but under fixed budgets, aggressive dropout underfits.
+  6. Higher dropout may require more optimization; this experiment intentionally keeps the same 20-epoch budget for every rate.
 
 ---
 
@@ -99,8 +99,8 @@
 - **Allocated Time:** ~45–50 seconds
 - **Talking Points:**
   1. In conclusion, we successfully built and verified inverted dropout from mathematical first principles without external library abstractions.
-  2. Moderate validation-tuned dropout reliably reduced generalization error on both datasets—achieving an 11.03% relative improvement on MNIST and 2.16% on Fashion-MNIST.
+  2. Moderate validation-selected dropout lowered mean test error relative to the no-dropout baseline in our fixed protocol—achieving an 11.03% relative improvement on MNIST and 2.16% on Fashion-MNIST.
   3. Our negative results demonstrate that canonical dropout rates like $d=0.5$ cannot be applied blindly: regularizer strength must be tuned against validation data.
   4. The complete codebase, audited metrics, and verified IEEE report are available in our private GitHub repository.
-  5. Finally, we have prepared a quick Python demo script that loads our saved validation-selected checkpoint and performs instant CPU inference on test examples without any retraining.
+  5. Finally, we demonstrate instant CPU inference on the first 10 MNIST test samples with 10/10 correct. This is a demonstration sample only, while our formal reported test accuracy remains 96.157%.
   6. Thank you, and I would now be happy to demonstrate the model and answer any questions.
