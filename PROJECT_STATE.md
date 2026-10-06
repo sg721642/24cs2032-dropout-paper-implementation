@@ -13,7 +13,7 @@ Repository owner: sg721642
 Preferred repository: 24cs2032-dropout-paper-implementation
 Visibility: private by default
 Repository creation / ordinary commits / pushes: USER AUTHORIZED
-Verified remote URL / branch / last pushed SHA: PENDING (being set up now)
+Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 421968ac997b96ea38b11041319b07d1c5f3b69e
 
 ## Local environment
 Workspace absolute path: /Users/satyamgupta/Documents/24CS2032_Dropout
@@ -131,11 +131,14 @@ Course submission receipt: PENDING
 gh version: 2.100.0
 Authenticated account: sg721642 (verified via gh api user --jq .login)
 Repository: sg721642/24cs2032-dropout-paper-implementation
-Visibility: PRIVATE (default)
-Push status: PENDING (being executed now)
-Remote URL: PENDING
+Visibility: PRIVATE (confirmed via gh repo view)
+Push status: VERIFIED
+Remote URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
 Branch: main
-Last verified HEAD SHA: PENDING
+Local HEAD SHA: 421968ac997b96ea38b11041319b07d1c5f3b69e
+Upstream SHA: 421968ac997b96ea38b11041319b07d1c5f3b69e
+HEAD == upstream: YES
+Commit message: "Initialize manual dropout project and reproducible setup"
 
 ## Commands and active process
 Exact currently running/last command: gh repo create sg721642/24cs2032-dropout-paper-implementation --private --source=. --remote=origin --push
