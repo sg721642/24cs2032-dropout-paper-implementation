@@ -1,0 +1,10 @@
+.venv/
+data/
+__pycache__/
+.DS_Store
+*.pt
+*.zip
+.ipynb_checkpoints/
+smoke*/
+timing*/
+.env
