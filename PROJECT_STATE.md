@@ -44,7 +44,7 @@ G1 setup: PASS — arm64 native Python 3.13.9; isolated .venv created; all depen
 G2 core tests: PASS — CPU ManualDropout self-test PASS; initialization equality across d=0.0, 0.5, 0.7 for seed 42 PASS; no built-in dropout in model; MPS self-test PASS
 G3 smoke pipeline: PASS — real MNIST & Fashion-MNIST smoke pipelines completed (smoke_mnist, smoke_fashion); 6 history rows, 3 final rows, 3 summary rows each; finite metrics verified; train/val split disjoint verified; 3 checkpoints each; checkpoint reload & inference verified. Programmatic PNG checks passed (PNG header signatures, PIL dimension/mode checks, non-empty). Direct visual inspection of all 8 smoke plots completed and confirmed unclipped, readable titles/axes/legends, correct axis designations (drop probability d vs keep probability q = 1 - d), and clean 3x4 failure-case grids. Smoke results are pipeline checks only and are not final experiment results.
 G4 protocol/device lock: PASS — CPU selected based on measured timing evidence (0.785s vs 4.398s); dropout-24cs2032-v1 protocol frozen; exact G5 commands recorded; final sweep NOT started
-G5 full experiments: PENDING
+G5 full experiments: IN PROGRESS (MNIST 24/24 complete, 480 epoch rows, 24 checkpoints; Fashion-MNIST PENDING)
 G6 results audit: PENDING
 G7 notebook/README: PENDING
 G8 report: PENDING
@@ -124,8 +124,8 @@ caffeinate -i python run.py --datasets fashion --device cpu --out results_fashio
 ```
 
 ## Experiments inventory
-MNIST final output folder: NONE (G5 pending)
-MNIST completed runs: 0/24
+MNIST final output folder: results_mnist (COMPLETE: 24/24 runs, 480 history rows, 24 final_results rows, 8 summary rows, 24 .pt checkpoints)
+MNIST completed runs: 24/24
 Fashion final output folder: NONE (G5 pending)
 Fashion completed runs: 0/24
 Separate exploratory/smoke/timing folders:
@@ -183,24 +183,22 @@ Remote URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
 Branch: main
 
 ## Commands and active process
-Exact currently running/last command: G3 visual audit completed; no training running
+Exact currently running/last command: caffeinate -i python run.py --datasets mnist --device cpu --out results_mnist (COMPLETE, exit code 0)
 Active process or terminal session: NONE
-Log path: NONE
-Last observed progress/time: 2026-10-07 02:18 IST
+Log path: logs/g5_mnist.log
+Last observed progress/time: 2026-10-07 03:02 IST
 
 ## Immediate next step
-First incomplete gate: G5 (full real experiments)
-Exact command: `caffeinate -i python run.py --datasets mnist --device cpu --out results_mnist`
+First incomplete gate: G5 Fashion-MNIST sweep
+Exact command: `caffeinate -i python run.py --datasets fashion --device cpu --out results_fashion 2>&1 | tee logs/g5_fashion.log`
 Expected evidence: 24 completed rate/seed runs, 480 epoch rows in history.csv, final_results.csv (24 rows), summary.csv (8 rows), 24 .pt checkpoints.
 
 ## Blockers requiring user interaction
-None. All local gates G0–G4 passed with verified evidence.
+None. All local gates G0–G4 passed with verified evidence; MNIST G5 sweep passed.
 
 ## Session handoff
 What was completed:
-- G2: CPU and MPS ManualDropout mathematical self-tests passed. Fair initialization equality across d=0, 0.5, 0.7 for seed 42 verified.
-- G3: Real MNIST and Fashion-MNIST end-to-end smoke tests completed, CSV row counts/finite metrics verified, split disjointness verified, model checkpoints reloaded and inference checked, all 8 smoke plots directly opened and visually inspected. Smoke results clearly documented as pipeline checks only (non-final).
-- G4: CPU and MPS default-width 2-epoch benchmarks executed (CPU: 0.785s vs MPS: 4.398s). CPU chosen as stable and >5.5x faster backend. dropout-24cs2032-v1 protocol frozen and G5 commands recorded.
-What changed: Updated PROJECT_STATE.md with distinguished programmatic vs complete direct visual inspection evidence.
+- G5 MNIST: Completed full 24-run sweep on CPU (8 rates × 3 seeds × 20 epochs = 480 epoch rows). All metrics finite, split disjointness verified, 24 checkpoints created, artifacts present.
+What changed: Updated PROJECT_STATE.md with MNIST completion; Fashion-MNIST PENDING.
 What failed: NONE.
-What remains: G5 (full experiments), G6 (audit), G7 (notebook/README), G8 (report), G9 (slides), G10 (clean package), G11 (submission).
+What remains: G5 Fashion-MNIST sweep, G6 (audit), G7 (notebook/README), G8 (report), G9 (slides), G10 (clean package), G11 (submission).
