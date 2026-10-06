@@ -1,11 +1,11 @@
 # 24CS2032 project state
-Last updated: 2026-10-07 03:22 IST
+Last updated: 2026-10-07 03:47 IST
 Master version: 3, 5 October 2026
 Protocol: dropout-24cs2032-v1
 
 ## Identity and administrative details
 Roll: 24CS2032
-Name: NOT PROVIDED
+Name: NOT PROVIDED (STUDENT_NAME_PENDING used in report)
 Presentation start date in workbook: 15 October 2026
 Individual slot: UNKNOWN
 Exact submission portal/cutoff: UNKNOWN
@@ -13,7 +13,7 @@ Repository owner: sg721642
 Preferred repository: 24cs2032-dropout-paper-implementation
 Visibility: private by default
 Repository creation / ordinary commits / pushes: USER AUTHORIZED
-Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 17c643934e59ecd4e1cab4d701310d7b8a9f86dd
+Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 1d39d3576ebd9fd95b8661670c7e607e860ff79e
 
 ## Local environment
 Workspace absolute path: /Users/satyamgupta/Documents/24CS2032_Dropout
@@ -47,7 +47,7 @@ G4 protocol/device lock: PASS — CPU selected based on measured timing evidence
 G5 full experiments: PASS — 24/24 MNIST runs complete (480 history rows, 24 checkpoints), 24/24 Fashion-MNIST runs complete (480 history rows, 24 checkpoints); all metrics finite; disjoint train/val splits; frozen configs and source hashes verified; no missing/fabricated runs; CPU backend used throughout
 G6 results audit: PASS — read-only verify_results.py passed on both datasets; protocol/configs/splits verified; all aggregates (mean and sample SD, ddof=1) independently recomputed and matched summary.csv within 1e-8; validation selection independently verified (MNIST d=0.4, Fashion d=0.2; test error strictly not used in selection); selected checkpoints reloaded and full-test error matches CSV records; all 8 final plots directly visually inspected; RESULTS_AUDIT.md created
 G7 notebook/README: PASS — make_notebook.py embeds project run.py byte-for-byte (SHA: e368902657099fcbf06ea48e91e1552320b881a2646ff3bb36a6a4023090fa5b); 24CS2032_Dropout.ipynb generated (12 cells, clean outputs, unexecuted deliverable); local smoke execution in notebook_smoke/ passed exit code 0; README.md updated with G6 verified metrics, reproduction limits, cautious negative finding discussions, and assistance disclosure; hosted Colab execution recorded as NOT VERIFIED; environment frozen to environment-lock.txt
-G8 report: PENDING
+G8 report: PENDING (IDENTITY ONLY) — report content/compile/visual QA complete; verified student name required before final PASS
 G9 presentation: PENDING
 G10 clean package: PENDING
 G11 repository/course submission: PENDING
@@ -198,7 +198,7 @@ Diagnostic logs:
 - g7_notebook_smoke.log (PASS: local smoke notebook execution via nbclient, exit code 0)
 Notebook local execution: PASS (tested on temporary isolated copy notebook_smoke/24CS2032_Dropout_smoke.ipynb via nbclient; exited code 0; final results untouched; deliverable notebook left unexecuted)
 Hosted Colab execution: NOT VERIFIED ("Hosted Colab execution has not yet been verified")
-Report source/PDF/page count/render check: PENDING
+Report source/PDF/page count/render check: report/main.tex (complete), report/references.bib (8 references), report/IEEEtran.cls, report/figures/ (5 genuine final figures), report/24CS2032_Dropout_Report.pdf (584 KB, compiled via tectonic 0.17.0, exit 0, exactly 5 pages, 0 LaTeX errors, 0 unresolved citations/references, visual inspection of all 5 rendered pages PASS; author name marked STUDENT_NAME_PENDING per identity rule)
 Slides/source/render check: PENDING
 Submission ZIP/integrity: PENDING
 GitHub URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
@@ -209,35 +209,39 @@ gh version: 2.100.0
 Authenticated account: sg721642
 Repository: sg721642/24cs2032-dropout-paper-implementation
 Visibility: PRIVATE (confirmed)
-Push status: VERIFIED (prior commit: 17c643934e59ecd4e1cab4d701310d7b8a9f86dd)
+Push status: VERIFIED (prior commit: 1d39d3576ebd9fd95b8661670c7e607e860ff79e)
 Remote URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
 Branch: main
 
 ## Commands and active process
-Exact currently running/last command: python make_notebook.py && python -m pip freeze > environment-lock.txt (COMPLETE, exit code 0)
+Exact currently running/last command: tectonic main.tex (exit 0) && python render_pdf.py (exit 0)
 Active process or terminal session: NONE
-Log path: logs/g7_notebook_smoke.log
-Last observed progress/time: 2026-10-07 03:22 IST
+Log path: report/compile.log
+Last observed progress/time: 2026-10-07 03:47 IST
 
 ## Immediate next step
-First incomplete gate: G8 (experimental report writing)
-Exact command: Draft 24CS2032 dropout paper report following master handbook guidelines
-Expected evidence: Complete written report with verified figures, tables, and audit citations
+First incomplete gate: G8 final closure (awaiting verified student name to replace STUDENT_NAME_PENDING in report/main.tex and recompile PDF)
+Exact command: Await verified student name, update \author in report/main.tex, recompile with tectonic, and transition G8 to PASS
+Expected evidence: Clean compiled report PDF with verified student name and roll number 24CS2032
 
 ## Blockers requiring user interaction
-None. All local gates G0–G7 passed with verified evidence.
+Student Name: The actual student name has not been provided in the project authority. Per strict identity rules, STUDENT_NAME_PENDING is used in report/main.tex and report/24CS2032_Dropout_Report.pdf. The user must provide their verified student name to achieve final G8 PASS before proceeding to G9.
 
 ## Session handoff
 What was completed:
-- G7: Notebook and README reproducibility completed:
-  1. Environment locked into environment-lock.txt (Python 3.13.9, PyTorch 2.14.1, torchvision 0.29.1, numpy 2.5.3, pandas 3.0.6, matplotlib 3.11.2).
-  2. make_notebook.py verified and run to create 24CS2032_Dropout.ipynb (12 cells, format 4.5).
-  3. Programmatic AST & SHA256 comparison confirmed embedded run.py matches project run.py byte-for-byte (e368902657099fcbf06ea48e91e1552320b881a2646ff3bb36a6a4023090fa5b).
-  4. Notebook content audited: roll 24CS2032, citations, self-test, 20 epochs, seeds 42/43/44, validation-only selection; no built-in dropout; no fake outputs.
-  5. Local notebook execution tested on temporary smoke copy (notebook_smoke/24CS2032_Dropout_smoke.ipynb) with exit code 0; final results untouched. Deliverable notebook left unexecuted with clean null outputs.
-  6. Hosted Google Colab execution recorded as NOT VERIFIED ("Hosted Colab execution has not yet been verified").
-  7. README.md updated with exact verified G6 metrics, reproduction instructions, architecture details, negative findings, reproduction limits, and AI pair-programming disclosure.
-  8. Programmatic README audit verified exact numerical consistency against RESULTS_AUDIT.md and summary CSVs.
-What changed: make_notebook.py, 24CS2032_Dropout.ipynb, environment-lock.txt, README.md, PROJECT_STATE.md, .gitignore.
+- G8: IEEE conference 5-page report authored, compiled, audited, and visually inspected:
+  1. Installed tectonic 0.17.0 via Homebrew and PyMuPDF 1.28.2 in .venv.
+  2. Placed official CTAN IEEEtran.cls in report/.
+  3. Populated report/figures/ with genuine final experiment figures (mnist_overfitting.png, mnist_keep_probability.png, fashion_keep_probability.png, mnist_failure_cases.png, fashion_failure_cases.png); no smoke figures used.
+  4. Authored report/references.bib with 8 complete bibliographic entries (Srivastava et al. JMLR 2014, LeCun et al. 1998, Xiao et al. 2017, author project page, deepnet repo, PyTorch docs, Torchvision MNIST, Torchvision Fashion-MNIST).
+  5. Authored report/main.tex adhering strictly to IEEE conference format, structured into VII sections: Introduction, Dropout Mathematical Formulation, Experimental Setup & Methodology, MNIST Empirical Findings, Fashion-MNIST Extension, Discussion & Limitations, Conclusion, and external Assistance Statement.
+  6. Incorporated complete 8-rate summary tables for MNIST and Fashion-MNIST with exact mean +/- sample SD numbers matching RESULTS_AUDIT.md and summary CSVs.
+  7. Formatted keep-probability ablation curves and failure analysis side-by-side figures.
+  8. Compiled clean PDF report/24CS2032_Dropout_Report.pdf (584 KB) via tectonic 0.17.0 with 0 errors, 0 undefined citations, 0 undefined references, and 0 overfull hboxes.
+  9. Verified exact page count: 5 pages (target 4–6 pages).
+  10. Programmatically rendered each page to high-resolution PNG at 130 DPI and directly visually inspected all 5 pages via image viewer; confirmed clean two-column layout, unclipped figures, sharp typography, and absence of text overlaps.
+  11. Audited against identity rules: Author name marked STUDENT_NAME_PENDING with roll 24CS2032.
+  12. Gate status set to PENDING (IDENTITY ONLY); G9 remains PENDING until student name is supplied.
+What changed: report/main.tex, report/references.bib, report/IEEEtran.cls, report/figures/*, report/24CS2032_Dropout_Report.pdf, PROJECT_STATE.md, .gitignore.
 What failed: NONE.
-What remains: G8 (report), G9 (slides), G10 (clean package), G11 (submission).
+What remains: G8 final closure upon student name input, G9 (presentation slides), G10 (clean packaging), G11 (submission receipt).

@@ -10,3 +10,6 @@ timing*/
 .env
 *.log
 notebook_smoke*/
+report/rendered/
+report/compile.log
+report/main.pdf
