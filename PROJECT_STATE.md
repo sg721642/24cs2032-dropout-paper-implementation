@@ -1,5 +1,5 @@
 # 24CS2032 project state
-Last updated: 2026-10-07 01:46 IST
+Last updated: 2026-10-07 02:08 IST
 Master version: 3, 5 October 2026
 Protocol: dropout-24cs2032-v1
 
@@ -13,7 +13,7 @@ Repository owner: sg721642
 Preferred repository: 24cs2032-dropout-paper-implementation
 Visibility: private by default
 Repository creation / ordinary commits / pushes: USER AUTHORIZED
-Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 421968ac997b96ea38b11041319b07d1c5f3b69e
+Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 0e97352506b365d222481f0bcf513bc64723581d
 
 ## Local environment
 Workspace absolute path: /Users/satyamgupta/Documents/24CS2032_Dropout
@@ -27,16 +27,23 @@ pandas version: 3.0.6
 matplotlib version: 3.11.2
 MPS built: True
 MPS available: True
-CPU test: PENDING (G2–G4)
-Chosen final backend: PENDING (G4 — device/protocol lock)
-Timing observations/estimated duration: PENDING (G2–G4)
+CPU test: PASS (self_test PASS: mask, scaling, gradient, fresh masks, eval, p=0, bounds, MLP shape)
+MPS test: PASS (self_test PASS: mask, scaling, gradient, fresh masks, eval, p=0, bounds, MLP shape)
+Chosen final backend: cpu
+Timing observations / measured elapsed:
+- CPU 2-epoch benchmark (default width=256, train=10000, val=5000, test=10000): 0.785 seconds
+- MPS 2-epoch benchmark (default width=256, train=10000, val=5000, test=10000): 4.398 seconds
+- Backend decision: CPU is >5.5x faster than MPS on this workload due to GPU dispatch and synchronization latency on small tensors (MLP parameter count: 335,114). CPU selected as optimal stable backend.
+Estimated duration (ESTIMATE ONLY):
+- One dataset full sweep (24 runs × 20 epochs): ~0.785s × 240 ≈ 188.4s (~3.14 minutes)
+- Two datasets full sweep (48 runs total): ~376.8s (~6.28 minutes)
 
 ## Gate status
 G0 context: PASS — roll 24CS2032 identified; master read to END marker (line 1829); workspace and pre-existing state inspected; no unrelated repository overwritten
-G1 setup: PASS — arm64 native Python 3.13.9; isolated .venv created; all dependencies installed; run.py/make_notebook.py/verify_results.py compile; ManualDropout present, no built-in dropout; parameter count 335114 verified; PROJECT_STATE.md updated from real observations
-G2 core tests: PENDING
-G3 smoke pipeline: PENDING
-G4 protocol/device lock: PENDING
+G1 setup: PASS — arm64 native Python 3.13.9; isolated .venv created; all dependencies installed; run.py/make_notebook.py/verify_results.py compile; ManualDropout present, no built-in dropout; parameter count 335114 verified; initial commit and push verified
+G2 core tests: PASS — CPU ManualDropout self-test PASS; initialization equality across d=0.0, 0.5, 0.7 for seed 42 PASS; no built-in dropout in model; MPS self-test PASS
+G3 smoke pipeline: PASS — real MNIST & Fashion-MNIST smoke pipelines completed (smoke_mnist, smoke_fashion); 6 history rows, 3 final rows, 3 summary rows each; finite metrics verified; train/val split disjoint verified; 3 checkpoints each; checkpoint reload & inference verified; 4 PNG plots each visually inspected and confirmed unclipped; marked strictly NON-FINAL
+G4 protocol/device lock: PASS — CPU selected based on measured timing evidence (0.785s vs 4.398s); dropout-24cs2032-v1 protocol frozen; exact G5 commands recorded; final sweep NOT started
 G5 full experiments: PENDING
 G6 results audit: PENDING
 G7 notebook/README: PENDING
@@ -45,117 +52,145 @@ G9 presentation: PENDING
 G10 clean package: PENDING
 G11 repository/course submission: PENDING
 
-## Commands executed in G0–G1 stage
+## Commands executed in G2–G4 stage
+```bash
+# G2 CPU self-test
+python run.py --self-test --device cpu | tee g2_selftest_cpu.log
+
+# G2 Fair initialization check
+python - <<'PY' | tee g2_initialization_check.log
+import torch
+from run import MLP, set_seed
+seed = 42
+set_seed(seed); m0 = MLP(0.0, 256)
+set_seed(seed); m5 = MLP(0.5, 256)
+set_seed(seed); m7 = MLP(0.7, 256)
+assert m0.state_dict().keys() == m5.state_dict().keys() == m7.state_dict().keys()
+for k in m0.state_dict():
+    assert torch.equal(m0.state_dict()[k], m5.state_dict()[k])
+    assert torch.equal(m0.state_dict()[k], m7.state_dict()[k])
+print("PASS: identical initial model state for seed 42 across d=0.0, 0.5, 0.7")
+PY
+
+# G3 Real MNIST smoke pipeline
+python run.py --datasets mnist --device cpu --epochs 2 --train-size 200 --val-size 100 --test-size 100 --rates 0 0.5 0.7 --seeds 42 --width 32 --out smoke_mnist 2>&1 | tee g3_smoke_mnist.log
+
+# G3 Real Fashion-MNIST smoke pipeline
+python run.py --datasets fashion --device cpu --epochs 2 --train-size 200 --val-size 100 --test-size 100 --rates 0 0.5 0.7 --seeds 42 --width 32 --out smoke_fashion 2>&1 | tee g3_smoke_fashion.log
+
+# G3 Programmatic audit and checkpoint reload
+# (Verified 6 history rows, 3 final rows, 3 summary rows, finite values, disjoint splits, checkpoint reload)
+
+# G4 CPU default-width timing (width=256, train=10000, val=5000, test=10000, batch=128)
+python run.py --datasets mnist --device cpu --epochs 2 --rates 0.5 --seeds 42 --out timing_cpu 2>&1 | tee g4_timing_cpu.log
+
+# G4 MPS correctness self-test
+python run.py --self-test --device mps | tee g2_selftest_mps.log
+
+# G4 MPS default-width timing
+python run.py --datasets mnist --device mps --epochs 2 --rates 0.5 --seeds 42 --out timing_mps 2>&1 | tee g4_timing_mps.log
 ```
-pwd && uname -m && sw_vers && ls -la
-find /Users/satyamgupta/Documents -maxdepth 3 -type f -print | sort | head -60
-find /Users/satyamgupta -maxdepth 4 -name "*24CS2032*Dropout*" -o -name "*Dropout*MASTER*"
-wc -l /Users/satyamgupta/Downloads/24CS2032_Dropout_FINAL_MASTER.md
-# [read entire master in 4 chunks, lines 1–400, 400–800, 800–1200, 1200–1830]
-git rev-parse --show-toplevel 2>/dev/null || true  # NOT_A_GIT_REPO
-git status --short --branch 2>/dev/null || true
-command -v python3 && python3 --version
-python3 -c "import platform,sys; print(sys.executable); print(platform.machine())"
-command -v python3.13 && python3.13 --version
-python3.13 -m venv /Users/satyamgupta/Documents/24CS2032_Dropout/.venv
-source .venv/bin/activate && python --version && python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -c "import torch; print(torch.__version__, torch.backends.mps.is_available())"
-python -m py_compile run.py make_notebook.py verify_results.py
-grep -nE 'ManualDropout|nn\.Dropout|functional\.dropout|F\.dropout' run.py
-python -c "import run; print(sum(p.numel() for p in run.MLP(0.0, 256).parameters()))"
-gh --version && gh auth status && gh api user --jq .login
-gh repo view sg721642/24cs2032-dropout-paper-implementation ...
-git init -b main
-git add .gitignore requirements.txt run.py make_notebook.py verify_results.py README.md 24CS2032_Dropout_FINAL_MASTER.md PROJECT_STATE.md
-git commit -m "Initialize manual dropout project and reproducible setup"
-gh repo create sg721642/24cs2032-dropout-paper-implementation --private --source=. --remote=origin --push
+
+## Frozen scientific protocol (dropout-24cs2032-v1)
+- Protocol ID: dropout-24cs2032-v1
+- Architecture: 784 → 256 → 256 → 256 → 10
+- Activation: ReLU
+- Dropout: manual hidden-layer inverted dropout only
+  - training: x * mask / q (where q = 1 - d)
+  - evaluation: x
+  - no input dropout, no output dropout
+- Drop rates: 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7 (8 rates)
+- Seeds: 42, 43, 44 (3 seeds)
+- Split seed: 2026
+- Data: train 10000, validation 5000, official test 10000
+- Preprocessing: float32 / 255
+- Epochs: 20
+- Batch size: 128
+- Optimizer: Adam (lr=0.001, weight_decay=0)
+- Other regularization: none
+- Selection: lowest mean validation error across seeds (tie → lower drop rate)
+- Final metrics: fixed final epoch, mean + sample SD
+- Test policy: descriptive comparison only; no rate/epoch/hyperparameter tuning from test set
+- Datasets: MNIST main reproduction, Fashion-MNIST same-protocol extension
+- Chosen final backend: cpu (measured faster than MPS for this architecture)
+
+## Exact recorded G5 final commands (DO NOT EXECUTE UNTIL G5)
+```bash
+# MNIST final sweep (24 runs: 8 rates × 3 seeds × 20 epochs = 480 epoch rows)
+caffeinate -i python run.py --datasets mnist --device cpu --out results_mnist
+
+# Fashion-MNIST final sweep (24 runs: 8 rates × 3 seeds × 20 epochs = 480 epoch rows)
+caffeinate -i python run.py --datasets fashion --device cpu --out results_fashion
 ```
 
-## Pre-existing state found
-- Workspace /Users/satyamgupta/Documents/untitled\ folder was empty (fresh folder)
-- Master file found at /Users/satyamgupta/Downloads/24CS2032_Dropout_FINAL_MASTER.md (1830 lines)
-- No PROJECT_STATE.md pre-existed
-- No other project files pre-existed
-- /Users/satyamgupta/Documents/24CS2032_Dropout/ created fresh
-- No unrelated repository in project folder
-
-## Errors/blockers
-NONE encountered in G0–G1.
-
-## Source files created
-- /Users/satyamgupta/Documents/24CS2032_Dropout/run.py (extracted from master Section 8, verbatim)
-- /Users/satyamgupta/Documents/24CS2032_Dropout/make_notebook.py (extracted from master Section 9, verbatim)
-- /Users/satyamgupta/Documents/24CS2032_Dropout/verify_results.py (extracted from master Part III Section K, verbatim)
-- /Users/satyamgupta/Documents/24CS2032_Dropout/requirements.txt (from master Section 7.3)
-- /Users/satyamgupta/Documents/24CS2032_Dropout/.gitignore (from master Section 7.3, plus .env)
-- /Users/satyamgupta/Documents/24CS2032_Dropout/README.md (from master Section 17 template)
-- /Users/satyamgupta/Documents/24CS2032_Dropout/24CS2032_Dropout_FINAL_MASTER.md (copied from ~/Downloads/)
-No backups or diffs needed — no pre-existing source to compare against.
-
-## Static validation results (G1)
-- run.py py_compile: PASS
-- make_notebook.py py_compile: PASS
-- verify_results.py py_compile: PASS
-- ManualDropout found: YES (lines 25, 48, 49, 50, 82, 95, 96, 103 in run.py)
-- nn.Dropout found: NO
-- functional.dropout / F.dropout found: NO
-- Default parameter count: 335114 VERIFIED
-
-## Experiments
-MNIST final output folder: NONE
+## Experiments inventory
+MNIST final output folder: NONE (G5 pending)
 MNIST completed runs: 0/24
-Fashion final output folder: NONE
+Fashion final output folder: NONE (G5 pending)
 Fashion completed runs: 0/24
-Separate exploratory/smoke folders: NONE
+Separate exploratory/smoke/timing folders:
+- smoke_mnist (NON-FINAL pipeline test)
+- smoke_fashion (NON-FINAL pipeline test)
+- timing_cpu (2-epoch benchmark: 0.785s)
+- timing_mps (2-epoch benchmark: 4.398s)
 Protocol deviations and reason: NONE
 Source changes and reason: NONE
 
 ## Actual results
-Do not fill until CSVs are complete and checked.
+Do not fill until CSVs are complete and checked in G5/G6.
 Baseline/selected rate/mean error/sample SD: PENDING
 Selection based on: mean validation error, fixed final epoch
 Negative findings/failure examples: PENDING
 
 ## Artifacts and evidence
 Source/requirements/notebook paths: /Users/satyamgupta/Documents/24CS2032_Dropout/{run.py,make_notebook.py,verify_results.py,requirements.txt,.gitignore,README.md}
+Smoke folders: /Users/satyamgupta/Documents/24CS2032_Dropout/{smoke_mnist,smoke_fashion}
+Timing folders: /Users/satyamgupta/Documents/24CS2032_Dropout/{timing_cpu,timing_mps}
+Diagnostic logs:
+- g2_selftest_cpu.log
+- g2_initialization_check.log
+- g2_selftest_mps.log
+- g3_smoke_mnist.log
+- g3_smoke_fashion.log
+- g3_checkpoint_reload.log
+- g4_timing_cpu.log
+- g4_timing_mps.log
 Notebook local execution: NOT VERIFIED
 Hosted Colab execution: NOT VERIFIED
 Report source/PDF/page count/render check: PENDING
 Slides/source/render check: PENDING
 Submission ZIP/integrity: PENDING
-GitHub URL: PENDING (push in progress)
+GitHub URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
 Course submission receipt: PENDING
 
 ## GitHub status
 gh version: 2.100.0
-Authenticated account: sg721642 (verified via gh api user --jq .login)
+Authenticated account: sg721642
 Repository: sg721642/24cs2032-dropout-paper-implementation
-Visibility: PRIVATE (confirmed via gh repo view)
-Push status: VERIFIED
+Visibility: PRIVATE (confirmed)
+Push status: VERIFIED (prior commit: 0e97352506b365d222481f0bcf513bc64723581d)
 Remote URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
 Branch: main
-Local HEAD SHA: 421968ac997b96ea38b11041319b07d1c5f3b69e
-Upstream SHA: 421968ac997b96ea38b11041319b07d1c5f3b69e
-HEAD == upstream: YES
-Commit message: "Initialize manual dropout project and reproducible setup"
 
 ## Commands and active process
-Exact currently running/last command: gh repo create sg721642/24cs2032-dropout-paper-implementation --private --source=. --remote=origin --push
+Exact currently running/last command: G4 timing completed; no training running
 Active process or terminal session: NONE
 Log path: NONE
-Last observed progress/time: 2026-10-07 01:46 IST
+Last observed progress/time: 2026-10-07 02:08 IST
 
 ## Immediate next step
-First incomplete gate: G2–G4 (correctness/smoke/device choice)
-Exact command: python run.py --self-test --device cpu (then MPS timing and smoke pipeline)
-Expected evidence: PASS line from self_test(); smoke CSV/PNG/checkpoint files; device timing; v1 protocol locked.
+First incomplete gate: G5 (full real experiments)
+Exact command: `caffeinate -i python run.py --datasets mnist --device cpu --out results_mnist`
+Expected evidence: 24 completed rate/seed runs, 480 epoch rows in history.csv, final_results.csv (24 rows), summary.csv (8 rows), 24 .pt checkpoints.
 
 ## Blockers requiring user interaction
-None currently. If GitHub 2FA or SSH confirmation is needed for push, user must approve in Terminal.
+None. All local gates G0–G4 passed with verified evidence.
 
 ## Session handoff
-What was completed: G0 (workspace inspection, master read to END marker) + G1 (venv, dependencies, file extraction, static validation, GitHub setup initiated)
-What changed: Created /Users/satyamgupta/Documents/24CS2032_Dropout/ with all project files; created .venv with torch 2.14.1 / torchvision 0.29.1 / numpy 2.5.3 / pandas 3.0.6 / matplotlib 3.11.2; initialized git; created remote repo sg721642/24cs2032-dropout-paper-implementation (private); pushed initial commit.
-What failed and full error/log location: NONE
-What remains: G2 (run.py --self-test on CPU and MPS); G3 (smoke pipelines); G4 (device/protocol lock); G5–G11 (experiments through submission)
+What was completed:
+- G2: CPU and MPS ManualDropout mathematical self-tests passed. Fair initialization equality across d=0, 0.5, 0.7 for seed 42 verified.
+- G3: Real MNIST and Fashion-MNIST end-to-end smoke tests completed, CSV row counts/finite metrics verified, split disjointness verified, model checkpoints reloaded and inference checked, plots visually inspected.
+- G4: CPU and MPS default-width 2-epoch benchmarks executed (CPU: 0.785s vs MPS: 4.398s). CPU chosen as stable and >5.5x faster backend. dropout-24cs2032-v1 protocol frozen and G5 commands recorded.
+What changed: Updated PROJECT_STATE.md with full G2–G4 evidence and timing benchmarks.
+What failed: NONE.
+What remains: G5 (full experiments), G6 (audit), G7 (notebook/README), G8 (report), G9 (slides), G10 (clean package), G11 (submission).
