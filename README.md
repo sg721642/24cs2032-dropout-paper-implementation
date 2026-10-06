@@ -80,7 +80,7 @@ python presentation/demo.py
 - `results_mnist/`: Recorded metrics, summaries, configuration, and ablation plots for MNIST.
 - `results_fashion/`: Recorded metrics, summaries, configuration, and ablation plots for Fashion-MNIST.
 - `report/`: IEEE two-column report source (`main.tex`, `references.bib`, figures) and compiled PDF (`24CS2032_Dropout_Report.pdf`).
-- `presentation/`: Final editable presentation (`24CS2032_Dropout_Presentation.pptx`), speaker notes (`SPEAKER_NOTES.md`), viva preparation (`VIVA.md`), and saved-model inference demo (`demo.py`).
+- `presentation/`: Presentation deck (`24CS2032_Dropout_Presentation.pptx`), saved-model inference demo (`demo.py`), and sample predictions (`demo_predictions.png`).
 
 ## References
 

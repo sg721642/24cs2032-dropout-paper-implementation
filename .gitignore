@@ -21,6 +21,12 @@ timing_mps/
 timing*/
 report/rendered/
 presentation/rendered/
+presentation/SPEAKER_NOTES.md
+presentation/VIVA.md
+presentation/build_presentation.py
+presentation/render_slides.py
+submission/
+submission*/
 report/compile.log
 report/main.pdf
 *.log
