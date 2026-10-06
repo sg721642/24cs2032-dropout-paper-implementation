@@ -1,5 +1,5 @@
 # 24CS2032 project state
-Last updated: 2026-10-07 03:13 IST
+Last updated: 2026-10-07 03:22 IST
 Master version: 3, 5 October 2026
 Protocol: dropout-24cs2032-v1
 
@@ -13,7 +13,7 @@ Repository owner: sg721642
 Preferred repository: 24cs2032-dropout-paper-implementation
 Visibility: private by default
 Repository creation / ordinary commits / pushes: USER AUTHORIZED
-Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 3eab696431d6e9e2a542cfd756cd3167dc2d1606
+Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 17c643934e59ecd4e1cab4d701310d7b8a9f86dd
 
 ## Local environment
 Workspace absolute path: /Users/satyamgupta/Documents/24CS2032_Dropout
@@ -46,7 +46,7 @@ G3 smoke pipeline: PASS — real MNIST & Fashion-MNIST smoke pipelines completed
 G4 protocol/device lock: PASS — CPU selected based on measured timing evidence (0.785s vs 4.398s); dropout-24cs2032-v1 protocol frozen; exact G5 commands recorded; final sweep NOT started
 G5 full experiments: PASS — 24/24 MNIST runs complete (480 history rows, 24 checkpoints), 24/24 Fashion-MNIST runs complete (480 history rows, 24 checkpoints); all metrics finite; disjoint train/val splits; frozen configs and source hashes verified; no missing/fabricated runs; CPU backend used throughout
 G6 results audit: PASS — read-only verify_results.py passed on both datasets; protocol/configs/splits verified; all aggregates (mean and sample SD, ddof=1) independently recomputed and matched summary.csv within 1e-8; validation selection independently verified (MNIST d=0.4, Fashion d=0.2; test error strictly not used in selection); selected checkpoints reloaded and full-test error matches CSV records; all 8 final plots directly visually inspected; RESULTS_AUDIT.md created
-G7 notebook/README: PENDING
+G7 notebook/README: PASS — make_notebook.py embeds project run.py byte-for-byte (SHA: e368902657099fcbf06ea48e91e1552320b881a2646ff3bb36a6a4023090fa5b); 24CS2032_Dropout.ipynb generated (12 cells, clean outputs, unexecuted deliverable); local smoke execution in notebook_smoke/ passed exit code 0; README.md updated with G6 verified metrics, reproduction limits, cautious negative finding discussions, and assistance disclosure; hosted Colab execution recorded as NOT VERIFIED; environment frozen to environment-lock.txt
 G8 report: PENDING
 G9 presentation: PENDING
 G10 clean package: PENDING
@@ -163,7 +163,7 @@ Model selection strictly based on lowest mean validation error across seeds at f
 - Negative findings: Reference $d=0.5$ underperforms no-dropout baseline; rates $d \ge 0.5$ degrade performance sharply ($d=0.7$: $17.453\%$).
 
 ## Artifacts and evidence
-Source/requirements/notebook paths: /Users/satyamgupta/Documents/24CS2032_Dropout/{run.py,make_notebook.py,verify_results.py,requirements.txt,.gitignore,README.md}
+Source/requirements/notebook paths: /Users/satyamgupta/Documents/24CS2032_Dropout/{run.py,make_notebook.py,verify_results.py,requirements.txt,environment-lock.txt,24CS2032_Dropout.ipynb,.gitignore,README.md}
 Audit document: /Users/satyamgupta/Documents/24CS2032_Dropout/RESULTS_AUDIT.md
 Final experiment folders:
 - results_mnist/ (480 history rows, 24 final rows, 8 summary rows, 24 .pt checkpoints, RESULTS.md, selected_rates.json, 4 PNG plots)
@@ -195,8 +195,9 @@ Diagnostic logs:
 - g6_verify_fashion.log (PASS)
 - g6_aggregate_audit.log (PASS: independent recomputation matches summary.csv within 1e-8)
 - g6_checkpoint_final.log (PASS: selected model checkpoints reloaded, evaluated on full 10k test set, matched CSV)
-Notebook local execution: NOT VERIFIED
-Hosted Colab execution: NOT VERIFIED
+- g7_notebook_smoke.log (PASS: local smoke notebook execution via nbclient, exit code 0)
+Notebook local execution: PASS (tested on temporary isolated copy notebook_smoke/24CS2032_Dropout_smoke.ipynb via nbclient; exited code 0; final results untouched; deliverable notebook left unexecuted)
+Hosted Colab execution: NOT VERIFIED ("Hosted Colab execution has not yet been verified")
 Report source/PDF/page count/render check: PENDING
 Slides/source/render check: PENDING
 Submission ZIP/integrity: PENDING
@@ -208,35 +209,35 @@ gh version: 2.100.0
 Authenticated account: sg721642
 Repository: sg721642/24cs2032-dropout-paper-implementation
 Visibility: PRIVATE (confirmed)
-Push status: VERIFIED (prior commit: 3eab696431d6e9e2a542cfd756cd3167dc2d1606)
+Push status: VERIFIED (prior commit: 17c643934e59ecd4e1cab4d701310d7b8a9f86dd)
 Remote URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
 Branch: main
 
 ## Commands and active process
-Exact currently running/last command: python verify_results.py results_mnist && python verify_results.py results_fashion (COMPLETE, exit code 0)
+Exact currently running/last command: python make_notebook.py && python -m pip freeze > environment-lock.txt (COMPLETE, exit code 0)
 Active process or terminal session: NONE
-Log path: logs/g6_verify_fashion.log
-Last observed progress/time: 2026-10-07 03:13 IST
+Log path: logs/g7_notebook_smoke.log
+Last observed progress/time: 2026-10-07 03:22 IST
 
 ## Immediate next step
-First incomplete gate: G7 (notebook + README reproducibility)
-Exact command: `python make_notebook.py` and updating `README.md` with verified tables and findings.
-Expected evidence: Self-contained, runnable Jupyter notebook reproducing the experimental pipeline; README documenting repository layout, execution instructions, and audit summary.
+First incomplete gate: G8 (experimental report writing)
+Exact command: Draft 24CS2032 dropout paper report following master handbook guidelines
+Expected evidence: Complete written report with verified figures, tables, and audit citations
 
 ## Blockers requiring user interaction
-None. All local gates G0–G6 passed with verified evidence.
+None. All local gates G0–G7 passed with verified evidence.
 
 ## Session handoff
 What was completed:
-- G6: Independent results audit completed:
-  1. Master verifier passed for both datasets.
-  2. Protocol, configs, split disjointness, and official 10k test size verified.
-  3. All statistical aggregates (mean and sample SD, ddof=1) independently recomputed from final_results.csv and matched summary.csv within 1e-8.
-  4. Validation selection independently verified (MNIST d=0.4, Fashion d=0.2; test error strictly not used).
-  5. Selected checkpoints reloaded and evaluated over full 10,000 official test images; error matched final_results.csv exact (MNIST: 3.5200%, Fashion: 14.5400%).
-  6. All 8 final PNG plots directly viewed and verified.
-  7. Real failure cases documented.
-  8. RESULTS_AUDIT.md created.
-What changed: Updated PROJECT_STATE.md with G6 PASS and full verified numerical findings.
+- G7: Notebook and README reproducibility completed:
+  1. Environment locked into environment-lock.txt (Python 3.13.9, PyTorch 2.14.1, torchvision 0.29.1, numpy 2.5.3, pandas 3.0.6, matplotlib 3.11.2).
+  2. make_notebook.py verified and run to create 24CS2032_Dropout.ipynb (12 cells, format 4.5).
+  3. Programmatic AST & SHA256 comparison confirmed embedded run.py matches project run.py byte-for-byte (e368902657099fcbf06ea48e91e1552320b881a2646ff3bb36a6a4023090fa5b).
+  4. Notebook content audited: roll 24CS2032, citations, self-test, 20 epochs, seeds 42/43/44, validation-only selection; no built-in dropout; no fake outputs.
+  5. Local notebook execution tested on temporary smoke copy (notebook_smoke/24CS2032_Dropout_smoke.ipynb) with exit code 0; final results untouched. Deliverable notebook left unexecuted with clean null outputs.
+  6. Hosted Google Colab execution recorded as NOT VERIFIED ("Hosted Colab execution has not yet been verified").
+  7. README.md updated with exact verified G6 metrics, reproduction instructions, architecture details, negative findings, reproduction limits, and AI pair-programming disclosure.
+  8. Programmatic README audit verified exact numerical consistency against RESULTS_AUDIT.md and summary CSVs.
+What changed: make_notebook.py, 24CS2032_Dropout.ipynb, environment-lock.txt, README.md, PROJECT_STATE.md, .gitignore.
 What failed: NONE.
-What remains: G7 (notebook/README), G8 (report), G9 (slides), G10 (clean package), G11 (submission).
+What remains: G8 (report), G9 (slides), G10 (clean package), G11 (submission).
