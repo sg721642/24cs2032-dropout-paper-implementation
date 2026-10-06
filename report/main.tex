@@ -22,7 +22,7 @@
 \maketitle
 
 \begin{abstract}
-Deep artificial neural networks are prone to overfitting when trained with extensive parameter capacity on finite training samples. Dropout regularizes deep networks by stochastically omitting hidden units during training to suppress co-adaptations. In this study, we present a complete from-scratch manual implementation of inverted dropout in PyTorch without built-in library abstractions. We conduct a rigorous, fixed-budget rate ablation across eight drop rates ($d \in \{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7\}$) over three random seeds ($42, 43, 44$) on a fully connected architecture ($784 \to 256 \to 256 \to 256 \to 10$). On the primary MNIST benchmark, validation error selects $d=0.4$, reducing mean test error from $4.320 \pm 0.295\%$ to $3.843 \pm 0.282\%$ ($11.03\%$ relative reduction). On the Fashion-MNIST extension, validation selects $d=0.2$, reducing mean test error from $14.663 \pm 0.175\%$ to $14.347 \pm 0.253\%$ ($2.16\%$ relative reduction). However, excessive drop rates degrade performance below the baseline. Under this reduced-scale educational setting, dropout provides meaningful regularization, but its optimal rate is dataset-sensitive and requires validation-based selection.
+Dropout regularizes deep neural networks by stochastically omitting hidden units during training to suppress feature co-adaptation. In this study, we implement inverted dropout from first principles in PyTorch without built-in library modules. We conduct a fixed-budget rate ablation across eight drop rates ($d \in \{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7\}$) across three seeds ($42, 43, 44$) on a three-hidden-layer MLP ($784 \to 256 \to 256 \to 256 \to 10$). On MNIST, mean validation error selects $d=0.4$, lowering test error from $4.320 \pm 0.295\%$ to $3.843 \pm 0.282\%$ ($11.03\%$ relative error reduction). On the Fashion-MNIST extension using the same protocol, validation error selects $d=0.2$, reducing test error from $14.663 \pm 0.175\%$ to $14.347 \pm 0.253\%$ ($2.16\%$ relative reduction). Conversely, higher rates degrade performance under the fixed 20-epoch budget. Under our reduced-scale experimental constraints, dropout provides measurable regularization, with optimal rates depending on dataset characteristics and requiring validation-based selection.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -176,7 +176,7 @@ $0.7$ & $2.513 \pm 0.153$ & $5.133 \pm 0.090$ & $5.110 \pm 0.147$ \\
 \end{tabular}
 \end{table}
 
-\textbf{Baseline Performance:} The unregularized baseline ($d=0.0$) achieves a training error of $0.203 \pm 0.200\%$ but a test error of $4.320 \pm 0.295\%$, representing a substantial generalization gap of $4.117 \pm 0.101$ percentage points (pp).
+\textbf{Baseline Performance:} The unregularized baseline ($d=0.0$) achieves a training error of $0.203 \pm 0.200\%$, validation error of $4.260 \pm 0.533\%$, and test error of $4.320 \pm 0.295\%$, representing a substantial generalization gap of $4.117 \pm 0.101$ percentage points (pp).
 
 \textbf{Validation-Selected Model:} The lowest mean validation error is attained at drop rate $d=0.4$ ($3.747 \pm 0.130\%$). At this rate, the model achieves a test error of $3.843 \pm 0.282\%$ (accuracy: $96.157\%$). Compared to the unregularized baseline, $d=0.4$ yields an absolute reduction in test error of $0.477$ pp, corresponding to a relative test error reduction of:
 \begin{equation}
@@ -189,7 +189,7 @@ Furthermore, the generalization gap narrows from $4.117$ pp to $3.520 \pm 0.295$
 \textbf{Negative Findings:} When the drop rate is increased to $d=0.6$ and $d=0.7$, test performance deteriorates to $4.380 \pm 0.104\%$ and $5.110 \pm 0.147\%$ respectively, both performing markedly worse than the unregularized baseline.
 
 \subsection{Fashion-MNIST Extension}
-To evaluate whether these regularizing properties generalize beyond digit recognition, we executed the identical 24-run protocol on Fashion-MNIST~\cite{xiao2017fashion}. Table~\ref{tab:fashion_summary} summarizes the results.
+To evaluate whether these regularizing properties generalize beyond digit recognition, we executed the identical 24-run protocol on Fashion-MNIST~\cite{xiao2017fashion} as an extension using the same experimental protocol. Table~\ref{tab:fashion_summary} summarizes the results.
 
 \begin{table}[htbp]
 \caption{Fashion-MNIST Results at Epoch 20 (Mean $\pm$ SD over Seeds 42, 43, 44)}
@@ -212,7 +212,7 @@ $0.7$ & $14.543 \pm 0.468$ & $15.673 \pm 0.380$ & $17.453 \pm 0.376$ \\
 \end{tabular}
 \end{table}
 
-\textbf{Baseline Performance:} The unregularized baseline ($d=0.0$) produces a test error of $14.663 \pm 0.175\%$ with a generalization gap of $7.533 \pm 0.351$ pp.
+\textbf{Baseline Performance:} The unregularized baseline ($d=0.0$) produces a training error of $7.130 \pm 0.177\%$, validation error of $13.127 \pm 0.247\%$, and test error of $14.663 \pm 0.175\%$ with a generalization gap of $7.533 \pm 0.351$ pp.
 
 \textbf{Validation-Selected Model:} Validation error selects drop rate $d=0.2$ ($13.087 \pm 0.408\%$). The selected model attains a test error of $14.347 \pm 0.253\%$ (accuracy: $85.653\%$), yielding an absolute reduction of $0.317$ pp ($2.16\%$ relative reduction) and contracting the generalization gap to $5.763 \pm 0.165$ pp.
 
@@ -257,27 +257,27 @@ On Fashion-MNIST (Fig.~\ref{fig:keep_prob_fashion}), the optimal retention is hi
 \section{Discussion and Comparison with Srivastava et al. (2014)}
 
 \subsection{Comparison with Original Findings}
-In Table~2 of Srivastava et al.~\cite{srivastava2014dropout}, the authors report a test error of $1.25\%$ for a standard feedforward neural network with dropout and ReLU activations on MNIST. In our reduced-scale reproduction, our baseline achieves $4.320 \pm 0.295\%$ and our validation-selected model achieves $3.843 \pm 0.282\%$.
+In Table~2 of Srivastava et al.~\cite{srivastava2014dropout}, the authors report a test error of $1.25\%$ for a standard feedforward neural network with dropout and ReLU activations on MNIST ($3 \times 1024$ hidden units, 60,000 training examples, SGD with momentum). In our reduced-scale reproduction, our baseline achieves $4.320 \pm 0.295\%$ and our validation-selected model achieves $3.843 \pm 0.282\%$.
 
-We explicitly state that these numerical scores are \emph{not directly comparable} due to major methodological and budget differences:
+Our reduced-scale experiment is not an apples-to-apples comparison with the original paper. As detailed below, these results reflect fundamentally different experimental budgets:
 \begin{enumerate}
-\item \textbf{Network Capacity:} Srivastava et al. employed wide networks with $2{,}048$ to $8{,}192$ units per hidden layer ($10\times$ to $30\times$ more parameters), whereas our model utilizes 256 units per layer ($335{,}114$ parameters).
+\item \textbf{Network Capacity:} Srivastava et al. evaluated networks with $3 \times 1024$ units (and up to $8{,}192$ units in wider experiments), whereas our model utilizes 256 units per hidden layer ($335{,}114$ total parameters).
 \item \textbf{Dataset Scale:} The original paper utilized all 60,000 available training examples, compared to our subsampled set of 10,000 training examples.
-\item \textbf{Training Budget and Optimization:} The original work trained networks for hundreds of epochs using Stochastic Gradient Descent (SGD) with momentum, coupled with max-norm weight clipping ($\|W\|_2 \le c$). Our experiment employs the Adam optimizer for 20 epochs with no weight constraints.
-\item \textbf{Regularization Formulation:} We utilize modern inverted dropout rather than test-time weight rescaling.
+\item \textbf{Training Budget and Optimization:} The original work trained networks for hundreds of epochs using Stochastic Gradient Descent (SGD) with momentum and max-norm constraints ($\|W\|_2 \le c$), whereas our experiment employs Adam for 20 epochs without weight constraints.
+\item \textbf{Regularization Formulation:} We utilize modern inverted dropout during training rather than test-time weight rescaling.
 \end{enumerate}
 
-Despite these substantial numerical differences, our experiments successfully reproduce the fundamental qualitative finding of Srivastava et al. (Fig.~9(a)): the generalization error exhibits a U-shaped dependence on retention probability, where intermediate values offer optimal regularization, and extreme dropout rates underfit the training data.
+Despite these substantial budget differences, our experiments reproduce the fundamental qualitative finding of Srivastava et al. (Fig.~9(a)): generalization error exhibits a U-shaped dependence on retention probability, where intermediate keep probabilities offer optimal regularization and high dropout rates underfit under the fixed training budget. The Fashion-MNIST benchmark has no numerical counterpart in the 2014 paper and is evaluated strictly as an extension using the same experimental protocol.
 
 \subsection{Differential Regularization Behavior}
 A compelling finding of this study is the marked difference in optimal drop rate between MNIST ($d^* = 0.4$) and Fashion-MNIST ($d^* = 0.2$). MNIST digits consist of clean, high-contrast, stroke-based patterns with substantial redundant pixel information, making the representations highly amenable to aggressive unit deactivation. 
 
-Conversely, Fashion-MNIST exhibits complex, subtle textures and fine-grained visual distinctions between apparel categories. Under a constrained budget of 20 epochs, excessive dropout suppresses critical feature channels, impairing representational capacity and resulting in severe underfitting for $d \ge 0.5$.
+Conversely, Fashion-MNIST exhibits complex, subtle textures and fine-grained visual distinctions between apparel categories. High drop rates produced higher train and test error under the fixed 20-epoch budget, consistent with stronger underfitting for $d \ge 0.5$.
 
 \section{Failure Analysis and Limitations}
 
 \subsection{Empirical Failure Case Analysis}
-To understand the nature of model errors, we inspected misclassified test examples from the validation-selected models across both datasets. Figure~\ref{fig:failures} displays representative test failure cases.
+To inspect the nature of model errors, we examined misclassified test examples from the validation-selected models across both datasets. Figure~\ref{fig:failures} displays representative test failure cases.
 
 \begin{figure}[htbp]
 \centering
@@ -288,9 +288,9 @@ To understand the nature of model errors, we inspected misclassified test exampl
 \label{fig:failures}
 \end{figure}
 
-On MNIST (Fig.~\ref{fig:failures}, left), typical errors involve ambiguous handwriting: a handwritten digit with true label 2 is classified as 3 with confidence 0.52, and a handwritten digit with true label 9 is classified as 8 with confidence 0.91. From visual inspection, the handwritten strokes in these instances exhibit morphological features that resemble the predicted alternative classes. We emphasize this is an empirical visual observation of stroke similarity rather than a proven causal claim regarding latent activations.
+On MNIST (Fig.~\ref{fig:failures}, left), typical errors involve ambiguous handwriting: a handwritten digit with true label 2 is classified as 3 with confidence 0.52, and a handwritten digit with true label 9 is classified as 8 with confidence 0.91. From visual inspection, the handwritten strokes in these instances visually resemble the predicted alternative classes.
 
-On Fashion-MNIST (Fig.~\ref{fig:failures}, right), errors consistently concentrate at boundaries between semantically adjacent clothing categories: a true Coat is classified as Pullover with confidence 0.71, and a true Ankle Boot is classified as Sneaker with confidence 0.99. At $28 \times 28$ grayscale resolution, global silhouettes of coats and pullovers or boots and sneakers appear visually similar. Fully connected networks lack spatial inductive bias, rendering subtle texture distinctions challenging to resolve under low resolution and small training budgets.
+On Fashion-MNIST (Fig.~\ref{fig:failures}, right), errors consistently concentrate at boundaries between semantically adjacent clothing categories: a true Coat is classified as Pullover with confidence 0.71, and a true Ankle Boot is classified as Sneaker with confidence 0.99. At $28 \times 28$ grayscale resolution, global silhouettes of coats and pullovers or boots and sneakers share a similar silhouette and may be confused under low resolution and small training budgets. Fully connected networks lack spatial inductive bias, rendering subtle texture distinctions challenging to resolve.
 
 \subsection{Methodological Limitations}
 We identify the following methodological constraints:

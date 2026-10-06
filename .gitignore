@@ -5,11 +5,21 @@ __pycache__/
 *.pt
 *.zip
 .ipynb_checkpoints/
-smoke*/
-timing*/
 .env
-*.log
-notebook_smoke*/
+
+# Local working notes and verification state
+24CS2032_Dropout_FINAL_MASTER.md
+PROJECT_STATE.md
+RESULTS_AUDIT.md
+logs/
+notebook_smoke/
+smoke_mnist/
+smoke_fashion/
+smoke*/
+timing_cpu/
+timing_mps/
+timing*/
 report/rendered/
 report/compile.log
 report/main.pdf
+*.log
