@@ -1,5 +1,5 @@
 # 24CS2032 project state
-Last updated: 2026-10-07 03:06 IST
+Last updated: 2026-10-07 03:13 IST
 Master version: 3, 5 October 2026
 Protocol: dropout-24cs2032-v1
 
@@ -13,7 +13,7 @@ Repository owner: sg721642
 Preferred repository: 24cs2032-dropout-paper-implementation
 Visibility: private by default
 Repository creation / ordinary commits / pushes: USER AUTHORIZED
-Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 6b86e3cabd3ae66993fb07ecd977fa5a8be4116f
+Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 3eab696431d6e9e2a542cfd756cd3167dc2d1606
 
 ## Local environment
 Workspace absolute path: /Users/satyamgupta/Documents/24CS2032_Dropout
@@ -45,7 +45,7 @@ G2 core tests: PASS — CPU ManualDropout self-test PASS; initialization equalit
 G3 smoke pipeline: PASS — real MNIST & Fashion-MNIST smoke pipelines completed (smoke_mnist, smoke_fashion); 6 history rows, 3 final rows, 3 summary rows each; finite metrics verified; train/val split disjoint verified; 3 checkpoints each; checkpoint reload & inference verified. Programmatic PNG checks passed (PNG header signatures, PIL dimension/mode checks, non-empty). Direct visual inspection of all 8 smoke plots completed and confirmed unclipped, readable titles/axes/legends, correct axis designations (drop probability d vs keep probability q = 1 - d), and clean 3x4 failure-case grids. Smoke results are pipeline checks only and are not final experiment results.
 G4 protocol/device lock: PASS — CPU selected based on measured timing evidence (0.785s vs 4.398s); dropout-24cs2032-v1 protocol frozen; exact G5 commands recorded; final sweep NOT started
 G5 full experiments: PASS — 24/24 MNIST runs complete (480 history rows, 24 checkpoints), 24/24 Fashion-MNIST runs complete (480 history rows, 24 checkpoints); all metrics finite; disjoint train/val splits; frozen configs and source hashes verified; no missing/fabricated runs; CPU backend used throughout
-G6 results audit: PENDING
+G6 results audit: PASS — read-only verify_results.py passed on both datasets; protocol/configs/splits verified; all aggregates (mean and sample SD, ddof=1) independently recomputed and matched summary.csv within 1e-8; validation selection independently verified (MNIST d=0.4, Fashion d=0.2; test error strictly not used in selection); selected checkpoints reloaded and full-test error matches CSV records; all 8 final plots directly visually inspected; RESULTS_AUDIT.md created
 G7 notebook/README: PENDING
 G8 report: PENDING
 G9 presentation: PENDING
@@ -137,26 +137,48 @@ Protocol deviations and reason: NONE
 Source changes and reason: NONE
 
 ## Actual results
-Raw CSV/JSON/PNG outputs generated for both datasets.
-Note: Raw results recorded; statistical aggregation and validation-selected model undergo independent verification in G6.
-Selected rates written: MNIST d=0.4, Fashion d=0.2 (pending independent G6 verification).
+All values derived from independent recomputation of `final_results.csv` at fixed epoch 20 across seeds 42, 43, 44 (sample SD with $ddof=1$).
+Model selection strictly based on lowest mean validation error across seeds at fixed epoch 20 (ties broken by lower rate). Test set used for descriptive evaluation only.
+
+### MNIST
+- Baseline ($d=0.0$): Test error $4.320 \pm 0.295\%$, Generalization gap $4.117 \pm 0.101$ pp
+- Validation-selected rate: $d = 0.4$ (selected by minimum validation error $3.747 \pm 0.130\%$)
+- Selected model test error: $3.843 \pm 0.282\%$
+- Selected model test accuracy: $96.157 \pm 0.282\%$
+- Selected model generalization gap: $3.520 \pm 0.295$ pp
+- Test-error change vs baseline: $+0.477$ percentage points lower test error (Relative error reduction: $11.03\%$)
+- Reference rate ($d=0.5$): Test error $3.883 \pm 0.087\%$, Gap $3.183 \pm 0.083$ pp
+- Descriptive test-error-best rate: $d=0.3$ ($3.820 \pm 0.118\%$; not used for model selection)
+- Negative findings: Higher rates degrade test error below baseline ($d=0.6$: $4.380\%$, $d=0.7$: $5.110\%$).
+
+### Fashion-MNIST
+- Baseline ($d=0.0$): Test error $14.663 \pm 0.175\%$, Generalization gap $7.533 \pm 0.351$ pp
+- Validation-selected rate: $d = 0.2$ (selected by minimum validation error $13.087 \pm 0.408\%$)
+- Selected model test error: $14.347 \pm 0.253\%$
+- Selected model test accuracy: $85.653 \pm 0.253\%$
+- Selected model generalization gap: $5.763 \pm 0.165$ pp
+- Test-error change vs baseline: $+0.317$ percentage points lower test error (Relative error reduction: $2.16\%$)
+- Reference rate ($d=0.5$): Test error $15.133 \pm 0.325\%$ ($+0.470$ pp worse than baseline!)
+- Descriptive test-error-best rate: $d=0.1$ ($14.220 \pm 0.105\%$; not used for model selection)
+- Negative findings: Reference $d=0.5$ underperforms no-dropout baseline; rates $d \ge 0.5$ degrade performance sharply ($d=0.7$: $17.453\%$).
 
 ## Artifacts and evidence
 Source/requirements/notebook paths: /Users/satyamgupta/Documents/24CS2032_Dropout/{run.py,make_notebook.py,verify_results.py,requirements.txt,.gitignore,README.md}
+Audit document: /Users/satyamgupta/Documents/24CS2032_Dropout/RESULTS_AUDIT.md
 Final experiment folders:
 - results_mnist/ (480 history rows, 24 final rows, 8 summary rows, 24 .pt checkpoints, RESULTS.md, selected_rates.json, 4 PNG plots)
 - results_fashion/ (480 history rows, 24 final rows, 8 summary rows, 24 .pt checkpoints, RESULTS.md, selected_rates.json, 4 PNG plots)
 Smoke folders: /Users/satyamgupta/Documents/24CS2032_Dropout/{smoke_mnist,smoke_fashion}
 Note: Smoke results are pipeline checks only and are not final experiment results.
-Visual audit of smoke plots (all 8 directly opened and inspected):
-1. smoke_mnist/mnist_overfitting.png — readable, unclipped, correct train/test error & validation loss
-2. smoke_mnist/mnist_drop_rates.png — readable, unclipped, x-axis = drop probability d
-3. smoke_mnist/mnist_keep_probability.png — readable, unclipped, x-axis = keep probability q = 1 - d
-4. smoke_mnist/mnist_failure_cases.png — readable, unclipped 3x4 grid with true/pred labels & confidences
-5. smoke_fashion/fashion_overfitting.png — readable, unclipped, correct train/test error & validation loss
-6. smoke_fashion/fashion_drop_rates.png — readable, unclipped, x-axis = drop probability d
-7. smoke_fashion/fashion_keep_probability.png — readable, unclipped, x-axis = keep probability q = 1 - d
-8. smoke_fashion/fashion_failure_cases.png — readable, unclipped 3x4 grid with true/pred labels & confidences
+Visual audit of final plots (all 8 directly opened and inspected):
+1. results_mnist/mnist_overfitting.png — readable, unclipped, correct train/test error & validation loss
+2. results_mnist/mnist_drop_rates.png — readable, unclipped, x-axis = drop probability d
+3. results_mnist/mnist_keep_probability.png — readable, unclipped, x-axis = keep probability q = 1 - d
+4. results_mnist/mnist_failure_cases.png — readable, unclipped 3x4 grid of real test images with true/pred labels & confidences
+5. results_fashion/fashion_overfitting.png — readable, unclipped, correct train/test error & validation loss
+6. results_fashion/fashion_drop_rates.png — readable, unclipped, x-axis = drop probability d
+7. results_fashion/fashion_keep_probability.png — readable, unclipped, x-axis = keep probability q = 1 - d
+8. results_fashion/fashion_failure_cases.png — readable, unclipped 3x4 grid of real test images with true/pred labels & confidences
 Timing folders: /Users/satyamgupta/Documents/24CS2032_Dropout/{timing_cpu,timing_mps}
 Diagnostic logs:
 - g2_selftest_cpu.log
@@ -169,6 +191,10 @@ Diagnostic logs:
 - g4_timing_mps.log
 - g5_mnist.log (total runtime: ~151s)
 - g5_fashion.log (total runtime: ~148s)
+- g6_verify_mnist.log (PASS)
+- g6_verify_fashion.log (PASS)
+- g6_aggregate_audit.log (PASS: independent recomputation matches summary.csv within 1e-8)
+- g6_checkpoint_final.log (PASS: selected model checkpoints reloaded, evaluated on full 10k test set, matched CSV)
 Notebook local execution: NOT VERIFIED
 Hosted Colab execution: NOT VERIFIED
 Report source/PDF/page count/render check: PENDING
@@ -182,30 +208,35 @@ gh version: 2.100.0
 Authenticated account: sg721642
 Repository: sg721642/24cs2032-dropout-paper-implementation
 Visibility: PRIVATE (confirmed)
-Push status: VERIFIED (prior commit: 6b86e3cabd3ae66993fb07ecd977fa5a8be4116f)
+Push status: VERIFIED (prior commit: 3eab696431d6e9e2a542cfd756cd3167dc2d1606)
 Remote URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
 Branch: main
 
 ## Commands and active process
-Exact currently running/last command: caffeinate -i python run.py --datasets fashion --device cpu --out results_fashion (COMPLETE, exit code 0)
+Exact currently running/last command: python verify_results.py results_mnist && python verify_results.py results_fashion (COMPLETE, exit code 0)
 Active process or terminal session: NONE
-Log path: logs/g5_fashion.log
-Last observed progress/time: 2026-10-07 03:06 IST
+Log path: logs/g6_verify_fashion.log
+Last observed progress/time: 2026-10-07 03:13 IST
 
 ## Immediate next step
-First incomplete gate: G6 (results audit)
-Exact command: `python verify_results.py results_mnist && python verify_results.py results_fashion`
-Expected evidence: Independent verification of file counts, split disjointness, metric finiteness, recomputed mean/SD matching summary.csv, and validation selection rules.
+First incomplete gate: G7 (notebook + README reproducibility)
+Exact command: `python make_notebook.py` and updating `README.md` with verified tables and findings.
+Expected evidence: Self-contained, runnable Jupyter notebook reproducing the experimental pipeline; README documenting repository layout, execution instructions, and audit summary.
 
 ## Blockers requiring user interaction
-None. All local gates G0–G5 passed with verified evidence.
+None. All local gates G0–G6 passed with verified evidence.
 
 ## Session handoff
 What was completed:
-- G5: Completed both full experimental sweeps on CPU:
-  1. MNIST: 24 rate-seed runs (8 rates × 3 seeds × 20 epochs = 480 epoch rows), 24 .pt checkpoints, all metrics finite.
-  2. Fashion-MNIST: 24 rate-seed runs (8 rates × 3 seeds × 20 epochs = 480 epoch rows), 24 .pt checkpoints, all metrics finite.
-  Both datasets use identical frozen `dropout-24cs2032-v1` settings and verified source hash.
-What changed: Added results_fashion/ outputs; updated PROJECT_STATE.md with G5 PASS.
+- G6: Independent results audit completed:
+  1. Master verifier passed for both datasets.
+  2. Protocol, configs, split disjointness, and official 10k test size verified.
+  3. All statistical aggregates (mean and sample SD, ddof=1) independently recomputed from final_results.csv and matched summary.csv within 1e-8.
+  4. Validation selection independently verified (MNIST d=0.4, Fashion d=0.2; test error strictly not used).
+  5. Selected checkpoints reloaded and evaluated over full 10,000 official test images; error matched final_results.csv exact (MNIST: 3.5200%, Fashion: 14.5400%).
+  6. All 8 final PNG plots directly viewed and verified.
+  7. Real failure cases documented.
+  8. RESULTS_AUDIT.md created.
+What changed: Updated PROJECT_STATE.md with G6 PASS and full verified numerical findings.
 What failed: NONE.
-What remains: G6 (audit), G7 (notebook/README), G8 (report), G9 (slides), G10 (clean package), G11 (submission).
+What remains: G7 (notebook/README), G8 (report), G9 (slides), G10 (clean package), G11 (submission).
