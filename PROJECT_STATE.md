@@ -1,5 +1,5 @@
 # 24CS2032 project state
-Last updated: 2026-10-07 02:08 IST
+Last updated: 2026-10-07 02:18 IST
 Master version: 3, 5 October 2026
 Protocol: dropout-24cs2032-v1
 
@@ -13,7 +13,7 @@ Repository owner: sg721642
 Preferred repository: 24cs2032-dropout-paper-implementation
 Visibility: private by default
 Repository creation / ordinary commits / pushes: USER AUTHORIZED
-Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 0e97352506b365d222481f0bcf513bc64723581d
+Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 1f2749550663c1810c78c899565e60a91fd016f5
 
 ## Local environment
 Workspace absolute path: /Users/satyamgupta/Documents/24CS2032_Dropout
@@ -42,7 +42,7 @@ Estimated duration (ESTIMATE ONLY):
 G0 context: PASS — roll 24CS2032 identified; master read to END marker (line 1829); workspace and pre-existing state inspected; no unrelated repository overwritten
 G1 setup: PASS — arm64 native Python 3.13.9; isolated .venv created; all dependencies installed; run.py/make_notebook.py/verify_results.py compile; ManualDropout present, no built-in dropout; parameter count 335114 verified; initial commit and push verified
 G2 core tests: PASS — CPU ManualDropout self-test PASS; initialization equality across d=0.0, 0.5, 0.7 for seed 42 PASS; no built-in dropout in model; MPS self-test PASS
-G3 smoke pipeline: PASS — real MNIST & Fashion-MNIST smoke pipelines completed (smoke_mnist, smoke_fashion); 6 history rows, 3 final rows, 3 summary rows each; finite metrics verified; train/val split disjoint verified; 3 checkpoints each; checkpoint reload & inference verified; 4 PNG plots each visually inspected and confirmed unclipped; marked strictly NON-FINAL
+G3 smoke pipeline: PASS — real MNIST & Fashion-MNIST smoke pipelines completed (smoke_mnist, smoke_fashion); 6 history rows, 3 final rows, 3 summary rows each; finite metrics verified; train/val split disjoint verified; 3 checkpoints each; checkpoint reload & inference verified. Programmatic PNG checks passed (PNG header signatures, PIL dimension/mode checks, non-empty). Direct visual inspection of all 8 smoke plots completed and confirmed unclipped, readable titles/axes/legends, correct axis designations (drop probability d vs keep probability q = 1 - d), and clean 3x4 failure-case grids. Smoke results are pipeline checks only and are not final experiment results.
 G4 protocol/device lock: PASS — CPU selected based on measured timing evidence (0.785s vs 4.398s); dropout-24cs2032-v1 protocol frozen; exact G5 commands recorded; final sweep NOT started
 G5 full experiments: PENDING
 G6 results audit: PENDING
@@ -145,6 +145,16 @@ Negative findings/failure examples: PENDING
 ## Artifacts and evidence
 Source/requirements/notebook paths: /Users/satyamgupta/Documents/24CS2032_Dropout/{run.py,make_notebook.py,verify_results.py,requirements.txt,.gitignore,README.md}
 Smoke folders: /Users/satyamgupta/Documents/24CS2032_Dropout/{smoke_mnist,smoke_fashion}
+Note: Smoke results are pipeline checks only and are not final experiment results.
+Visual audit of smoke plots (all 8 directly opened and inspected):
+1. smoke_mnist/mnist_overfitting.png — readable, unclipped, correct train/test error & validation loss
+2. smoke_mnist/mnist_drop_rates.png — readable, unclipped, x-axis = drop probability d
+3. smoke_mnist/mnist_keep_probability.png — readable, unclipped, x-axis = keep probability q = 1 - d
+4. smoke_mnist/mnist_failure_cases.png — readable, unclipped 3x4 grid with true/pred labels & confidences
+5. smoke_fashion/fashion_overfitting.png — readable, unclipped, correct train/test error & validation loss
+6. smoke_fashion/fashion_drop_rates.png — readable, unclipped, x-axis = drop probability d
+7. smoke_fashion/fashion_keep_probability.png — readable, unclipped, x-axis = keep probability q = 1 - d
+8. smoke_fashion/fashion_failure_cases.png — readable, unclipped 3x4 grid with true/pred labels & confidences
 Timing folders: /Users/satyamgupta/Documents/24CS2032_Dropout/{timing_cpu,timing_mps}
 Diagnostic logs:
 - g2_selftest_cpu.log
@@ -168,15 +178,15 @@ gh version: 2.100.0
 Authenticated account: sg721642
 Repository: sg721642/24cs2032-dropout-paper-implementation
 Visibility: PRIVATE (confirmed)
-Push status: VERIFIED (prior commit: 0e97352506b365d222481f0bcf513bc64723581d)
+Push status: VERIFIED (prior commit: 1f2749550663c1810c78c899565e60a91fd016f5)
 Remote URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
 Branch: main
 
 ## Commands and active process
-Exact currently running/last command: G4 timing completed; no training running
+Exact currently running/last command: G3 visual audit completed; no training running
 Active process or terminal session: NONE
 Log path: NONE
-Last observed progress/time: 2026-10-07 02:08 IST
+Last observed progress/time: 2026-10-07 02:18 IST
 
 ## Immediate next step
 First incomplete gate: G5 (full real experiments)
@@ -189,8 +199,8 @@ None. All local gates G0–G4 passed with verified evidence.
 ## Session handoff
 What was completed:
 - G2: CPU and MPS ManualDropout mathematical self-tests passed. Fair initialization equality across d=0, 0.5, 0.7 for seed 42 verified.
-- G3: Real MNIST and Fashion-MNIST end-to-end smoke tests completed, CSV row counts/finite metrics verified, split disjointness verified, model checkpoints reloaded and inference checked, plots visually inspected.
+- G3: Real MNIST and Fashion-MNIST end-to-end smoke tests completed, CSV row counts/finite metrics verified, split disjointness verified, model checkpoints reloaded and inference checked, all 8 smoke plots directly opened and visually inspected. Smoke results clearly documented as pipeline checks only (non-final).
 - G4: CPU and MPS default-width 2-epoch benchmarks executed (CPU: 0.785s vs MPS: 4.398s). CPU chosen as stable and >5.5x faster backend. dropout-24cs2032-v1 protocol frozen and G5 commands recorded.
-What changed: Updated PROJECT_STATE.md with full G2–G4 evidence and timing benchmarks.
+What changed: Updated PROJECT_STATE.md with distinguished programmatic vs complete direct visual inspection evidence.
 What failed: NONE.
 What remains: G5 (full experiments), G6 (audit), G7 (notebook/README), G8 (report), G9 (slides), G10 (clean package), G11 (submission).
