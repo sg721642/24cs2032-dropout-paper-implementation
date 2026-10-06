@@ -13,7 +13,7 @@ Repository owner: sg721642
 Preferred repository: 24cs2032-dropout-paper-implementation
 Visibility: private by default
 Repository creation / ordinary commits / pushes: USER AUTHORIZED
-Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 1d39d3576ebd9fd95b8661670c7e607e860ff79e
+Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 6c417e5ff11f14e3e933fd2822dd9c6a887acd51
 
 ## Local environment
 Workspace absolute path: /Users/satyamgupta/Documents/24CS2032_Dropout
@@ -209,7 +209,7 @@ gh version: 2.100.0
 Authenticated account: sg721642
 Repository: sg721642/24cs2032-dropout-paper-implementation
 Visibility: PRIVATE (confirmed)
-Push status: VERIFIED (prior commit: 1d39d3576ebd9fd95b8661670c7e607e860ff79e)
+Push status: VERIFIED (prior commit: 6c417e5ff11f14e3e933fd2822dd9c6a887acd51)
 Remote URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
 Branch: main
 
