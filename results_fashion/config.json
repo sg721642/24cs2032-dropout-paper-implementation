@@ -1,0 +1,41 @@
+{
+  "datasets": [
+    "fashion"
+  ],
+  "rates": [
+    0.0,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7
+  ],
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "epochs": 20,
+  "train_size": 10000,
+  "val_size": 5000,
+  "test_size": 10000,
+  "split_seed": 2026,
+  "width": 256,
+  "batch_size": 128,
+  "lr": 0.001,
+  "threads": 4,
+  "device": "cpu",
+  "out": "results_fashion",
+  "self_test": false,
+  "device_used": "cpu",
+  "python": "3.13.9",
+  "torch": "2.14.1",
+  "torchvision": "0.29.1",
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "numpy": "2.5.3",
+  "pandas": "3.0.6",
+  "matplotlib": "3.11.2",
+  "source_sha256": "e368902657099fcbf06ea48e91e1552320b881a2646ff3bb36a6a4023090fa5b"
+}

@@ -1,5 +1,5 @@
 # 24CS2032 project state
-Last updated: 2026-10-07 02:18 IST
+Last updated: 2026-10-07 03:06 IST
 Master version: 3, 5 October 2026
 Protocol: dropout-24cs2032-v1
 
@@ -13,7 +13,7 @@ Repository owner: sg721642
 Preferred repository: 24cs2032-dropout-paper-implementation
 Visibility: private by default
 Repository creation / ordinary commits / pushes: USER AUTHORIZED
-Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 1f2749550663c1810c78c899565e60a91fd016f5
+Verified remote URL / branch / last pushed SHA: https://github.com/sg721642/24cs2032-dropout-paper-implementation / main / 6b86e3cabd3ae66993fb07ecd977fa5a8be4116f
 
 ## Local environment
 Workspace absolute path: /Users/satyamgupta/Documents/24CS2032_Dropout
@@ -44,7 +44,7 @@ G1 setup: PASS — arm64 native Python 3.13.9; isolated .venv created; all depen
 G2 core tests: PASS — CPU ManualDropout self-test PASS; initialization equality across d=0.0, 0.5, 0.7 for seed 42 PASS; no built-in dropout in model; MPS self-test PASS
 G3 smoke pipeline: PASS — real MNIST & Fashion-MNIST smoke pipelines completed (smoke_mnist, smoke_fashion); 6 history rows, 3 final rows, 3 summary rows each; finite metrics verified; train/val split disjoint verified; 3 checkpoints each; checkpoint reload & inference verified. Programmatic PNG checks passed (PNG header signatures, PIL dimension/mode checks, non-empty). Direct visual inspection of all 8 smoke plots completed and confirmed unclipped, readable titles/axes/legends, correct axis designations (drop probability d vs keep probability q = 1 - d), and clean 3x4 failure-case grids. Smoke results are pipeline checks only and are not final experiment results.
 G4 protocol/device lock: PASS — CPU selected based on measured timing evidence (0.785s vs 4.398s); dropout-24cs2032-v1 protocol frozen; exact G5 commands recorded; final sweep NOT started
-G5 full experiments: IN PROGRESS (MNIST 24/24 complete, 480 epoch rows, 24 checkpoints; Fashion-MNIST PENDING)
+G5 full experiments: PASS — 24/24 MNIST runs complete (480 history rows, 24 checkpoints), 24/24 Fashion-MNIST runs complete (480 history rows, 24 checkpoints); all metrics finite; disjoint train/val splits; frozen configs and source hashes verified; no missing/fabricated runs; CPU backend used throughout
 G6 results audit: PENDING
 G7 notebook/README: PENDING
 G8 report: PENDING
@@ -126,8 +126,8 @@ caffeinate -i python run.py --datasets fashion --device cpu --out results_fashio
 ## Experiments inventory
 MNIST final output folder: results_mnist (COMPLETE: 24/24 runs, 480 history rows, 24 final_results rows, 8 summary rows, 24 .pt checkpoints)
 MNIST completed runs: 24/24
-Fashion final output folder: NONE (G5 pending)
-Fashion completed runs: 0/24
+Fashion final output folder: results_fashion (COMPLETE: 24/24 runs, 480 history rows, 24 final_results rows, 8 summary rows, 24 .pt checkpoints)
+Fashion completed runs: 24/24
 Separate exploratory/smoke/timing folders:
 - smoke_mnist (NON-FINAL pipeline test)
 - smoke_fashion (NON-FINAL pipeline test)
@@ -137,13 +137,15 @@ Protocol deviations and reason: NONE
 Source changes and reason: NONE
 
 ## Actual results
-Do not fill until CSVs are complete and checked in G5/G6.
-Baseline/selected rate/mean error/sample SD: PENDING
-Selection based on: mean validation error, fixed final epoch
-Negative findings/failure examples: PENDING
+Raw CSV/JSON/PNG outputs generated for both datasets.
+Note: Raw results recorded; statistical aggregation and validation-selected model undergo independent verification in G6.
+Selected rates written: MNIST d=0.4, Fashion d=0.2 (pending independent G6 verification).
 
 ## Artifacts and evidence
 Source/requirements/notebook paths: /Users/satyamgupta/Documents/24CS2032_Dropout/{run.py,make_notebook.py,verify_results.py,requirements.txt,.gitignore,README.md}
+Final experiment folders:
+- results_mnist/ (480 history rows, 24 final rows, 8 summary rows, 24 .pt checkpoints, RESULTS.md, selected_rates.json, 4 PNG plots)
+- results_fashion/ (480 history rows, 24 final rows, 8 summary rows, 24 .pt checkpoints, RESULTS.md, selected_rates.json, 4 PNG plots)
 Smoke folders: /Users/satyamgupta/Documents/24CS2032_Dropout/{smoke_mnist,smoke_fashion}
 Note: Smoke results are pipeline checks only and are not final experiment results.
 Visual audit of smoke plots (all 8 directly opened and inspected):
@@ -165,6 +167,8 @@ Diagnostic logs:
 - g3_checkpoint_reload.log
 - g4_timing_cpu.log
 - g4_timing_mps.log
+- g5_mnist.log (total runtime: ~151s)
+- g5_fashion.log (total runtime: ~148s)
 Notebook local execution: NOT VERIFIED
 Hosted Colab execution: NOT VERIFIED
 Report source/PDF/page count/render check: PENDING
@@ -178,27 +182,30 @@ gh version: 2.100.0
 Authenticated account: sg721642
 Repository: sg721642/24cs2032-dropout-paper-implementation
 Visibility: PRIVATE (confirmed)
-Push status: VERIFIED (prior commit: 1f2749550663c1810c78c899565e60a91fd016f5)
+Push status: VERIFIED (prior commit: 6b86e3cabd3ae66993fb07ecd977fa5a8be4116f)
 Remote URL: https://github.com/sg721642/24cs2032-dropout-paper-implementation
 Branch: main
 
 ## Commands and active process
-Exact currently running/last command: caffeinate -i python run.py --datasets mnist --device cpu --out results_mnist (COMPLETE, exit code 0)
+Exact currently running/last command: caffeinate -i python run.py --datasets fashion --device cpu --out results_fashion (COMPLETE, exit code 0)
 Active process or terminal session: NONE
-Log path: logs/g5_mnist.log
-Last observed progress/time: 2026-10-07 03:02 IST
+Log path: logs/g5_fashion.log
+Last observed progress/time: 2026-10-07 03:06 IST
 
 ## Immediate next step
-First incomplete gate: G5 Fashion-MNIST sweep
-Exact command: `caffeinate -i python run.py --datasets fashion --device cpu --out results_fashion 2>&1 | tee logs/g5_fashion.log`
-Expected evidence: 24 completed rate/seed runs, 480 epoch rows in history.csv, final_results.csv (24 rows), summary.csv (8 rows), 24 .pt checkpoints.
+First incomplete gate: G6 (results audit)
+Exact command: `python verify_results.py results_mnist && python verify_results.py results_fashion`
+Expected evidence: Independent verification of file counts, split disjointness, metric finiteness, recomputed mean/SD matching summary.csv, and validation selection rules.
 
 ## Blockers requiring user interaction
-None. All local gates G0–G4 passed with verified evidence; MNIST G5 sweep passed.
+None. All local gates G0–G5 passed with verified evidence.
 
 ## Session handoff
 What was completed:
-- G5 MNIST: Completed full 24-run sweep on CPU (8 rates × 3 seeds × 20 epochs = 480 epoch rows). All metrics finite, split disjointness verified, 24 checkpoints created, artifacts present.
-What changed: Updated PROJECT_STATE.md with MNIST completion; Fashion-MNIST PENDING.
+- G5: Completed both full experimental sweeps on CPU:
+  1. MNIST: 24 rate-seed runs (8 rates × 3 seeds × 20 epochs = 480 epoch rows), 24 .pt checkpoints, all metrics finite.
+  2. Fashion-MNIST: 24 rate-seed runs (8 rates × 3 seeds × 20 epochs = 480 epoch rows), 24 .pt checkpoints, all metrics finite.
+  Both datasets use identical frozen `dropout-24cs2032-v1` settings and verified source hash.
+What changed: Added results_fashion/ outputs; updated PROJECT_STATE.md with G5 PASS.
 What failed: NONE.
-What remains: G5 Fashion-MNIST sweep, G6 (audit), G7 (notebook/README), G8 (report), G9 (slides), G10 (clean package), G11 (submission).
+What remains: G6 (audit), G7 (notebook/README), G8 (report), G9 (slides), G10 (clean package), G11 (submission).
