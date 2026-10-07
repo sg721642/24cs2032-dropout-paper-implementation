@@ -74,7 +74,7 @@ Inverted dropout preserves the first moment of each activation during training (
 \subsection{Inverted Dropout vs. Original Paper Formulation}
 In the original presentation by Srivastava et al.~\cite{srivastava2014dropout}, dropout was formulated using standard test-time scaling: during training, activations were unscaled ($\tilde{h}_i = m_i \cdot h_i$), and at test time, outgoing weights or activations were multiplied by the keep probability ($\tilde{h}_i = q \cdot h_i$). Reference materials on the author's project page~\cite{srivastava2014dropoutpage} and the historical Deepnet repository~\cite{srivastava2014deepnet} document this classical convention.
 
-Both conventions are mathematically equivalent in expectation, as both maintain identical forward signal magnitudes across phases. Inverted dropout is widely preferred in modern production frameworks (such as PyTorch~\cite{pytorch_dropout}) because it restricts stochasticity and scaling logic entirely to the training graph. At inference time, no extra arithmetic operations or memory allocations are introduced.
+Each convention matches its training first moment to its own evaluation rule: classical dropout gives $q h_i$ at evaluation, whereas inverted dropout gives $h_i$. They do not produce identical outputs for unchanged weights. Inverted dropout is widely preferred in modern production frameworks (such as PyTorch~\cite{pytorch_dropout}) because it restricts stochasticity and scaling logic entirely to the training graph; at inference time, evaluation is an unscaled identity forward pass without extra arithmetic operations or memory allocations.
 
 \subsection{Network Architecture}
 All experiments employ a Multilayer Perceptron (MLP) consisting of three fully connected hidden layers:
@@ -255,7 +255,7 @@ Figure~\ref{fig:keep_prob_mnist} and Figure~\ref{fig:keep_prob_fashion} present 
 
 The MNIST curve (Fig.~\ref{fig:keep_prob_mnist}) displays a distinct U-shaped profile. When $q=1.0$ (no dropout), overfitting leads to elevated test error ($4.320\%$). As $q$ decreases into the intermediate regime ($q \in [0.6, 0.9]$, corresponding to $d \in [0.1, 0.4]$), test error reaches an optimal trough between $3.820\%$ and $3.900\%$. However, when retention falls to $q \le 0.4$ ($d \ge 0.6$), test error rises steeply to $5.110\%$.
 
-On Fashion-MNIST (Fig.~\ref{fig:keep_prob_fashion}), the optimal retention is higher ($q=0.8$, $d=0.2$). As retention probability decreases below $q=0.5$ ($d > 0.5$), performance degrades rapidly.
+On Fashion-MNIST (Fig.~\ref{fig:keep_prob_fashion}), validation selected $q=0.8$ ($d=0.2$). The descriptive lowest mean test error occurred at $q=0.9$ ($d=0.1$). As retention probability decreases below $q=0.5$ ($d > 0.5$), performance degrades rapidly.
 
 \section{Discussion and Comparison with Srivastava et al. (2014)}
 
@@ -310,9 +310,9 @@ This study presented a complete, from-scratch implementation of inverted dropout
 Crucially, our experiments also revealed negative results: canonical rates such as $d=0.5$ underperformed the baseline on Fashion-MNIST, and high drop rates ($d \ge 0.6$) degraded accuracy across both benchmarks. These findings corroborate the core regularization hypothesis of Srivastava et al. while confirming that dropout is not universally beneficial without systematic validation calibration.
 
 \section*{Assistance and Provenance Statement}
-Artificial intelligence tools (ChatGPT and Antigravity) were employed for implementation guidance, code review, local workflow automation, verification, and documentation formatting. All experimental results, figures, tables, and numerical metrics presented in this paper originate entirely from recorded real-data runs executed in this project repository and independently audited from persistent artifacts. External assistance is disclosed in accordance with course policy.
+The initial core implementation was supplied in a ChatGPT-generated project guide. ChatGPT and Antigravity also supported review, execution workflow, and documentation. All experimental results, figures, tables, and numerical metrics presented in this paper originate entirely from recorded real-data runs executed in this project repository and independently audited from persistent artifacts.
 
-{ootnotesize
+{\footnotesize
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 }
