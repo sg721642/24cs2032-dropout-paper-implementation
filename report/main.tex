@@ -33,7 +33,7 @@ Dropout, regularization, neural networks, ablation study, model selection, MNIST
 \section{Introduction}
 Deep neural networks possess remarkable expressive capacity, enabling them to approximate complex non-linear functions. However, when parameter capacity is large relative to the volume of training examples, networks readily memorize training noise and overfit, yielding high generalization error on unseen test data~\cite{srivastava2014dropout}.
 
-To mitigate overfitting, ensemble methods combine predictions from multiple independently trained models. While effective, training and maintaining large ensembles of deep neural networks is computationally prohibitive. In their seminal work, Srivastava et al.~\cite{srivastava2014dropout} introduced dropout as a computationally efficient approximation to model ensembling. By stochastically dropping units during each training iteration, dropout trains an exponential family of thinned subnetworks that share weights, creating an implicit geometric ensemble at evaluation time.
+To mitigate overfitting, ensemble methods combine predictions from multiple independently trained models. While effective, training and maintaining large ensembles of deep neural networks is computationally prohibitive. In their seminal work, Srivastava et al.~\cite{srivastava2014dropout} introduced dropout as a computationally efficient approximation to model ensembling. By stochastically dropping units during each training iteration, dropout trains an exponential family of thinned subnetworks that share weights. At evaluation time, deterministic forward propagation can be interpreted as approximate model averaging over these thinned networks, rather than an exact arithmetic ensemble equivalence.
 
 The objective of this assignment is to implement dropout from first principles using Python and PyTorch without relying on built-in primitives such as \texttt{torch.nn.Dropout} or \texttt{torch.nn.functional.dropout}. We evaluate this manual implementation through a controlled drop-rate ablation across eight uniform rates ($d \in \{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7\}$) using three fixed initialization seeds ($42, 43, 44$). We investigate both the primary MNIST handwritten digit benchmark~\cite{lecun1998mnist} and an identical-protocol extension to Fashion-MNIST~\cite{xiao2017fashion}.
 
@@ -69,7 +69,7 @@ The primary mathematical justification for the $1/q$ scaling factor is preservat
 &= \frac{h_i}{q} \cdot q \\
 &= h_i.
 \end{align}
-Because $\mathbb{E}\left[\tilde{h}_i^{(\text{train})} \mid h_i\right] = \tilde{h}_i^{(\text{eval})} = h_i$, the input distribution received by subsequent downstream layers maintains an identical expected mean during training and evaluation. Consequently, downstream weights do not require post-hoc rescaling at inference time, ensuring that evaluation mode remains entirely deterministic and computationally identical to an unregularized forward pass.
+Inverted dropout preserves the first moment of each activation during training ($\mathbb{E}\left[\tilde{h}_i^{(\text{train})} \mid h_i\right] = \tilde{h}_i^{(\text{eval})} = h_i$) and therefore requires no additional activation scaling at evaluation. Downstream weights do not require post-hoc rescaling at inference time, ensuring that evaluation mode remains deterministic. Furthermore, dropout can be interpreted as approximate model averaging over many thinned networks, not as an exact arithmetic ensemble equivalence.
 
 \subsection{Inverted Dropout vs. Original Paper Formulation}
 In the original presentation by Srivastava et al.~\cite{srivastava2014dropout}, dropout was formulated using standard test-time scaling: during training, activations were unscaled ($\tilde{h}_i = m_i \cdot h_i$), and at test time, outgoing weights or activations were multiplied by the keep probability ($\tilde{h}_i = q \cdot h_i$). Reference materials on the author's project page~\cite{srivastava2014dropoutpage} and the historical Deepnet repository~\cite{srivastava2014deepnet} document this classical convention.
@@ -135,7 +135,7 @@ Compute Backend & CPU (Apple Silicon arm64, native) \\
 \end{table}
 
 \subsection{Data Partitioning and Fair Initialization}
-The official torchvision datasets~\cite{torchvision_mnist, torchvision_fashion} provide 60,000 training and 10,000 test images. To operate within a standardized educational compute budget, we fix split seed $2026$ to partition the 60,000 training images into 10,000 training examples, 5,000 validation examples, and 45,000 unused images. The official 10,000 test images remain completely untouched and are reserved exclusively for final evaluation.
+The official torchvision datasets~\cite{torchvision_mnist, torchvision_fashion} provide 60,000 training and 10,000 test images. To operate within a standardized educational compute budget, we fix split seed $2026$ to partition the 60,000 training images into 10,000 training examples, 5,000 validation examples, and 45,000 unused images. The official test set ($10{,}000$ images) was evaluated each epoch for descriptive learning curves. It was not used for gradient updates, dropout-rate selection, checkpoint selection, or training-budget decisions.
 
 To ensure strict experimental fairness across drop rates, we enforce deterministic initialization: for any given random seed ($s \in \{42, 43, 44\}$), the model weights across all eight drop rates ($d \in [0.0, 0.7]$) are verified to be bitwise identical at step 0 before optimization begins.
 
@@ -149,7 +149,7 @@ where $\overline{\text{Error}}_{\text{val}}(d)$ is the mean classification error
 In strict adherence to sound scientific methodology, test set performance is never consulted during rate selection, checkpoint picking, or hyperparameter adjustment. All reported test errors are unbiased descriptive metrics evaluated at the fixed termination epoch ($E=20$). Statistical dispersion is reported using the sample standard deviation ($ddof=1$).
 
 \subsection{Hardware and Execution Environment}
-Experiments were executed on macOS 26.6.2 (Darwin arm64) using Python 3.13.9, PyTorch 2.14.1, torchvision 0.29.1, and NumPy 2.5.3. Preliminary benchmarks revealed that CPU execution required 0.785 seconds per 2-epoch run compared to 4.398 seconds on Apple Metal Performance Shaders (MPS), representing an efficiency advantage of over $5.5\times$ for CPU. This performance difference is attributed to GPU kernel launch and synchronization latency on small parameter tensors (335k parameters). Consequently, CPU was locked as the deterministic compute backend.
+Experiments were executed on macOS 26.6.2 (Darwin arm64) using Python 3.13.9, PyTorch 2.14.1, torchvision 0.29.1, and NumPy 2.5.3. Preliminary benchmarks revealed that CPU execution required 0.785 seconds per 2-epoch run compared to 4.398 seconds on Apple Metal Performance Shaders (MPS), representing an efficiency advantage of over $5.5\times$ for CPU on this small model. This performance difference may reflect accelerator launch and host-device transfer overhead for this small workload ($335{,}114$ parameters). Consequently, CPU was locked as the deterministic compute backend.
 
 \section{Experimental Results}
 
@@ -176,6 +176,23 @@ $0.7$ & $2.513 \pm 0.153$ & $5.133 \pm 0.090$ & $5.110 \pm 0.147$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure*}[t]
+\centering
+\begin{minipage}[b]{0.48\textwidth}
+\centering
+\includegraphics[width=0.65\linewidth]{figures/mnist_keep_probability.png}
+\caption{Reduced-scale fixed-width dropout rate ablation on MNIST inspired by Srivastava et al.~\cite{srivastava2014dropout}, Fig.~9(a). Data points depict measured experimental results (mean $\pm$ sample SD across three seeds) plotted against keep probability $q = 1 - d$.}
+\label{fig:keep_prob_mnist}
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.48\textwidth}
+\centering
+\includegraphics[width=0.65\linewidth]{figures/fashion_keep_probability.png}
+\caption{Keep-probability ablation curve for Fashion-MNIST extension under protocol \texttt{dropout-24cs2032-v1}. Error increases monotonically for retention probabilities below $q = 0.8$ ($d > 0.2$).}
+\label{fig:keep_prob_fashion}
+\end{minipage}
+\end{figure*}
 
 \textbf{Baseline Performance:} The unregularized baseline ($d=0.0$) achieves a training error of $0.203 \pm 0.200\%$, validation error of $4.260 \pm 0.533\%$, and test error of $4.320 \pm 0.295\%$, representing a substantial generalization gap of $4.117 \pm 0.101$ percentage points (pp).
 
@@ -215,7 +232,7 @@ $0.7$ & $14.543 \pm 0.468$ & $15.673 \pm 0.380$ & $17.453 \pm 0.376$ \\
 
 \textbf{Baseline Performance:} The unregularized baseline ($d=0.0$) produces a training error of $7.130 \pm 0.177\%$, validation error of $13.127 \pm 0.247\%$, and test error of $14.663 \pm 0.175\%$ with a generalization gap of $7.533 \pm 0.351$ pp.
 
-\textbf{Validation-Selected Model:} Validation error selects drop rate $d=0.2$ ($13.087 \pm 0.408\%$). The selected model attains a test error of $14.347 \pm 0.253\%$ (accuracy: $85.653\%$), yielding an absolute reduction of $0.317$ pp ($2.16\%$ relative reduction) and contracting the generalization gap to $5.763 \pm 0.165$ pp.
+\textbf{Validation-Selected Model vs. Descriptive Test-Best Rate:} Validation error selects drop rate $d=0.2$ ($q=0.8$) based on minimum validation error ($13.087 \pm 0.408\%$), achieving test error $14.347 \pm 0.253\%$ (accuracy: $85.653\%$, $+0.317$ pp improvement over baseline, gap: $5.763 \pm 0.165$ pp). Descriptively, lowest numerical mean test error was observed at $d=0.1$ ($q=0.9$, $14.220 \pm 0.105\%$, val error $13.113 \pm 0.042\%$). Because selection relies strictly on validation error, $d=0.2$ ($q=0.8$) remains the sole selected model; $d=0.1$ must not be presented as the selected configuration.
 
 \textbf{Critical Negative Finding:} Notably, the standard paper reference rate of $d=0.5$ yields a test error of $15.133 \pm 0.325\%$, which is $0.470$ pp \emph{worse} than the no-dropout baseline. At $d=0.7$, test error degrades sharply to $17.453 \pm 0.376\%$. This highlights that applying a canonical drop rate of $d=0.5$ without validation tuning can actively harm model accuracy on more complex visual benchmarks.
 
@@ -224,7 +241,7 @@ Figure~\ref{fig:overfitting} illustrates the epoch-wise training error, test err
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.80\columnwidth]{figures/mnist_overfitting.png}
+\includegraphics[width=0.68\columnwidth]{figures/mnist_overfitting.png}
 \caption{Epoch-wise learning dynamics on MNIST comparing unregularized training ($d=0.0$) against dropout ($d=0.5$) under our reduced-scale protocol ($10{,}000$ training examples, $20$ epochs). While the unregularized model drives training error toward zero and exhibits rising validation loss (overfitting), dropout regularizes the representation, maintaining stable validation loss and lower test error.}
 \label{fig:overfitting}
 \end{figure}
@@ -234,22 +251,7 @@ In the baseline model ($d=0.0$), training error rapidly declines toward $0.2\%$,
 \subsection{Keep-Probability Ablation Curves}
 Figure~\ref{fig:keep_prob_mnist} and Figure~\ref{fig:keep_prob_fashion} present the relationships between test error and keep probability $q = 1 - d$ for MNIST and Fashion-MNIST respectively.
 
-\begin{figure*}[t]
-\centering
-\begin{minipage}[b]{0.48\textwidth}
-\centering
-\includegraphics[width=0.78\linewidth]{figures/mnist_keep_probability.png}
-\caption{Reduced-scale fixed-width dropout rate ablation on MNIST inspired by Srivastava et al.~\cite{srivastava2014dropout}, Fig.~9(a). Data points depict measured experimental results (mean $\pm$ sample SD across three seeds) plotted against keep probability $q = 1 - d$.}
-\label{fig:keep_prob_mnist}
-\end{minipage}
-\hfill
-\begin{minipage}[b]{0.48\textwidth}
-\centering
-\includegraphics[width=0.78\linewidth]{figures/fashion_keep_probability.png}
-\caption{Keep-probability ablation curve for Fashion-MNIST extension under protocol \texttt{dropout-24cs2032-v1}. Error increases monotonically for retention probabilities below $q = 0.8$ ($d > 0.2$).}
-\label{fig:keep_prob_fashion}
-\end{minipage}
-\end{figure*}
+
 
 The MNIST curve (Fig.~\ref{fig:keep_prob_mnist}) displays a distinct U-shaped profile. When $q=1.0$ (no dropout), overfitting leads to elevated test error ($4.320\%$). As $q$ decreases into the intermediate regime ($q \in [0.6, 0.9]$, corresponding to $d \in [0.1, 0.4]$), test error reaches an optimal trough between $3.820\%$ and $3.900\%$. However, when retention falls to $q \le 0.4$ ($d \ge 0.6$), test error rises steeply to $5.110\%$.
 
@@ -260,15 +262,15 @@ On Fashion-MNIST (Fig.~\ref{fig:keep_prob_fashion}), the optimal retention is hi
 \subsection{Comparison with Original Findings}
 In Table~2 of Srivastava et al.~\cite{srivastava2014dropout}, the authors report a test error of $1.25\%$ for a standard feedforward neural network with dropout and ReLU activations on MNIST ($3 \times 1024$ hidden units, 60,000 training examples, SGD with momentum). In our reduced-scale reproduction, our baseline achieves $4.320 \pm 0.295\%$ and our validation-selected model achieves $3.843 \pm 0.282\%$.
 
-Our reduced-scale experiment is not an apples-to-apples comparison with the original paper. As detailed below, these results reflect fundamentally different experimental budgets:
+Our reduced-scale experiment is not an apples-to-apples comparison with the original paper. As detailed below, these results reflect fundamentally different experimental regimes:
 \begin{enumerate}
 \item \textbf{Network Capacity:} Srivastava et al. evaluated networks with $3 \times 1024$ units (and up to $8{,}192$ units in wider experiments), whereas our model utilizes 256 units per hidden layer ($335{,}114$ total parameters).
 \item \textbf{Dataset Scale:} The original paper utilized all 60,000 available training examples, compared to our subsampled set of 10,000 training examples.
-\item \textbf{Training Budget and Optimization:} The original work trained networks for hundreds of epochs using Stochastic Gradient Descent (SGD) with momentum and max-norm constraints ($\|W\|_2 \le c$), whereas our experiment employs Adam for 20 epochs without weight constraints.
+\item \textbf{Training Budget and Optimization:} The original work trained networks for hundreds of epochs with learning-rate schedules and momentum. The $1.25\%$ result in Table~2 corresponds specifically to their $3 \times 1024$ ReLU dropout architecture; max-norm regularized variants ($\|W\|_2 \le c$) represent separate experimental configurations in the paper. By contrast, our experiment operates without weight constraints and employs Adam for a constrained budget of 20 epochs.
 \item \textbf{Regularization Formulation:} We utilize modern inverted dropout during training rather than test-time weight rescaling.
 \end{enumerate}
 
-Despite these substantial budget differences, our experiments reproduce the fundamental qualitative finding of Srivastava et al. (Fig.~9(a)): generalization error exhibits a U-shaped dependence on retention probability, where intermediate keep probabilities offer optimal regularization and high dropout rates underfit under the fixed training budget. The Fashion-MNIST benchmark has no numerical counterpart in the 2014 paper and is evaluated strictly as an extension using the same experimental protocol.
+Separately, Figure~9(a) of Srivastava et al. investigates the effect of varying retention probability on a fixed-architecture network. While our rate sweep is inspired by this study, ours is a reduced-scale ablation rather than an exact replication. Across our experiments, generalization error demonstrates a qualitatively similar non-monotonic response to retention probability: intermediate keep probabilities provide effective regularization, whereas higher train and test errors at high drop rates are consistent with stronger underfitting under the fixed 20-epoch budget. The Fashion-MNIST benchmark has no counterpart in the 2014 paper and is evaluated strictly as an extension using the same experimental protocol.
 
 \subsection{Differential Regularization Behavior}
 A compelling finding of this study is the marked difference in optimal drop rate between MNIST ($d^* = 0.4$) and Fashion-MNIST ($d^* = 0.2$). MNIST digits consist of clean, high-contrast, stroke-based patterns with substantial redundant pixel information, making the representations highly amenable to aggressive unit deactivation. 
@@ -282,16 +284,16 @@ To inspect the nature of model errors, we examined misclassified test examples f
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.45\columnwidth]{figures/mnist_failure_cases.png}
+\includegraphics[width=0.36\columnwidth]{figures/mnist_failure_cases.png}
 \hfill
-\includegraphics[width=0.45\columnwidth]{figures/fashion_failure_cases.png}
+\includegraphics[width=0.36\columnwidth]{figures/fashion_failure_cases.png}
 \caption{Representative misclassified test instances on MNIST ($d=0.4$, left) and Fashion-MNIST ($d=0.2$, right) showing true labels, model predictions, and softmax confidences.}
 \label{fig:failures}
 \end{figure}
 
-On MNIST (Fig.~\ref{fig:failures}, left), typical errors involve ambiguous handwriting: a handwritten digit with true label 2 is classified as 3 with confidence 0.52, and a handwritten digit with true label 9 is classified as 8 with confidence 0.91. From visual inspection, the handwritten strokes in these instances visually resemble the predicted alternative classes.
+The inspected examples on MNIST (Fig.~\ref{fig:failures}, left) include ambiguous handwriting: e.g., true label 2 classified as 3 (confidence 0.52) and true label 9 classified as 8 (confidence 0.91). In these specific instances, stroke patterns visually resemble the predicted class, though this observation does not establish an isolated causal mechanism or describe the entire error distribution.
 
-On Fashion-MNIST (Fig.~\ref{fig:failures}, right), errors consistently concentrate at boundaries between semantically adjacent clothing categories: a true Coat is classified as Pullover with confidence 0.71, and a true Ankle Boot is classified as Sneaker with confidence 0.99. At $28 \times 28$ grayscale resolution, global silhouettes of coats and pullovers or boots and sneakers share a similar silhouette and may be confused under low resolution and small training budgets. Fully connected networks lack spatial inductive bias, rendering subtle texture distinctions challenging to resolve.
+On Fashion-MNIST (Fig.~\ref{fig:failures}, right), the inspected examples include pairs from semantically adjacent categories: true Coat classified as Pullover (confidence 0.71), and true Ankle Boot classified as Sneaker (confidence 0.99). At $28 \times 28$ grayscale resolution, silhouettes of coats and pullovers or boots and sneakers share visual shape resemblances that may contribute to confusion under low resolution and small budgets, but the displayed examples do not establish category-wide concentration or identify individual misclassification causes. Fully connected architectures lack spatial convolutional inductive bias, making subtle texture distinctions challenging to resolve.
 
 \subsection{Methodological Limitations}
 We identify the following methodological constraints:
@@ -299,18 +301,18 @@ We identify the following methodological constraints:
 \item \textbf{Seed Sample Size:} All results are evaluated over three random seeds ($42, 43, 44$). While reporting sample standard deviation with $ddof=1$ reflects variance, this sample size is insufficient for formal statistical significance testing.
 \item \textbf{Fixed Training Budget:} All models were trained for exactly 20 epochs. High dropout rates inherently slow down convergence; allocating additional epochs might partially recover performance for $d \ge 0.5$.
 \item \textbf{Subsampled Training Split:} Using 10,000 training examples magnifies regularizer sensitivity relative to the full 60,000 dataset.
-\item \textbf{Verification Scope:} The results reported here were executed and verified locally on Apple Silicon CPU hardware. Hosted cloud execution (Google Colab) has not been verified.
+\item \textbf{Cloud Portability and Numerical Equivalence:} A separate complete MNIST CPU run was executed in Google Colab using the same source SHA256 and saved split indices, completing all 24 runs. The Colab environment selected $d=0.3$, while the primary Mac CPU experiment selected $d=0.4$. The primary reported results remain the Mac CPU experiment; exact cross-platform numerical equivalence is not claimed, with differing architecture backends and BLAS library routines serving as plausible contributing factors.
 \end{enumerate}
 
 \section{Conclusion}
-This study presented a complete, from-scratch implementation of inverted dropout in PyTorch, accompanied by an empirical ablation study across eight drop rates on MNIST and Fashion-MNIST. By strictly adhering to validation-based model selection, we demonstrated that moderate dropout rates reliably reduce test error relative to the unregularized baseline ($11.03\%$ relative reduction on MNIST at $d=0.4$; $2.16\%$ relative reduction on Fashion-MNIST at $d=0.2$). 
+This study presented a complete, from-scratch implementation of inverted dropout in PyTorch, accompanied by an empirical ablation study across eight drop rates on MNIST and Fashion-MNIST. By strictly adhering to validation-based model selection, we demonstrated that moderate dropout rates reduced mean test error relative to the unregularized baseline in our experimental setup ($11.03\%$ relative reduction on MNIST at $d=0.4$; $2.16\%$ relative reduction on Fashion-MNIST at $d=0.2$). 
 
 Crucially, our experiments also revealed negative results: canonical rates such as $d=0.5$ underperformed the baseline on Fashion-MNIST, and high drop rates ($d \ge 0.6$) degraded accuracy across both benchmarks. These findings corroborate the core regularization hypothesis of Srivastava et al. while confirming that dropout is not universally beneficial without systematic validation calibration.
 
 \section*{Assistance and Provenance Statement}
 Artificial intelligence tools (ChatGPT and Antigravity) were employed for implementation guidance, code review, local workflow automation, verification, and documentation formatting. All experimental results, figures, tables, and numerical metrics presented in this paper originate entirely from recorded real-data runs executed in this project repository and independently audited from persistent artifacts. External assistance is disclosed in accordance with course policy.
 
-{\small
+{ootnotesize
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 }

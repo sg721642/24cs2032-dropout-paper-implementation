@@ -30,3 +30,5 @@ submission*/
 report/compile.log
 report/main.pdf
 *.log
+results_mnist_colab/
+* (1).ipynb

@@ -37,6 +37,10 @@ Dropout rate was selected using mean validation error only.
 
 High dropout rates degraded performance under the fixed training budget ($d=0.7$ reached $5.110\%$ error on MNIST and $17.453\%$ on Fashion-MNIST).
 
+### Google Colab Portability Note
+
+The reproduction notebook was independently executed on Google Colab CPU. A complete separate 24-run MNIST sweep was finished using the same `run.py` (verified via SHA256) and identical saved split indices. Under the Colab cloud environment, mean validation error selected $d=0.3$, whereas the official Apple Silicon Mac CPU experiment selected $d=0.4$. Official reported project results remain the local Mac CPU experiments; exact cross-platform numerical equivalence is not claimed.
+
 ## Run
 
 Install dependencies:
@@ -68,6 +72,7 @@ Run saved-model inference demo:
 ```bash
 python presentation/demo.py
 ```
+> **Note:** `presentation/demo.py` expects the locally generated checkpoint `results_mnist/mnist_d0.4_s42.pt` and a local MNIST dataset cache. The checkpoint file is intentionally not committed to the clean Git repository or submission archive.
 
 ## Files
 
@@ -87,3 +92,5 @@ python presentation/demo.py
 1. Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., & Salakhutdinov, R. (2014). *"Dropout: A Simple Way to Prevent Neural Networks from Overfitting."* Journal of Machine Learning Research, 15(56), 1929–1958.
 2. LeCun, Y., Bottou, L., Bengio, Y., & Haffner, P. (1998). *"Gradient-based learning applied to document recognition."* Proceedings of the IEEE, 86(11), 2278–2324.
 3. Xiao, H., Rasul, K., & Vollgraf, R. (2017). *"Fashion-MNIST: a novel image dataset for benchmarking machine learning algorithms."* arXiv preprint arXiv:1708.07747.
+4. Srivastava, N., et al. (2014). *Deepnet: Implementation of Deep Learning Models in Python and C++ / CUDA.* GitHub repository: https://github.com/nitishsrivastava/deepnet (consulted for historical context on the original dropout implementation; no code was copied).
+
